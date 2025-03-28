@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register & Login</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
+
+    <!-- Firebase Config & Register Script -->
+    <script src="firebase-config.js" defer></script>
+    <script src="register.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div id="register">
+            <h2>Register</h2>
+            <input type="text" id="studentId" placeholder="Student ID">
+            <input type="email" id="registerEmail" placeholder="Email">
+            <input type="password" id="registerPassword" placeholder="Password">
+            <button id="registerButton">Register</button>
+            <p class="toggle"><a href="login.html">Already have an account? Login</a></p>
+        </div>   
+    </div>
+</body>
+</html>
