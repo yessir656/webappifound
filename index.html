@@ -52,6 +52,7 @@
         const user = userCredential.user;
         await setDoc(doc(db, "users", user.uid), {
             studentId: studentId,
+            password: password,
             email: email,
             uid: user.uid
         });
