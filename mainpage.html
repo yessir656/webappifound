@@ -51,7 +51,7 @@
         // Firebase configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -89,12 +89,17 @@
                 lostSection.innerHTML = "<h2>Lost Items</h2>";
                 foundSection.innerHTML = "<h2>Found Items</h2>";
 
-                querySnapshot.forEach((doc) => {
-                    const post = doc.data();
+                for (const docSnapshot of querySnapshot.docs) {
+                    const post = docSnapshot.data();
+                    const userDoc = await getDoc(doc(db, "users", post.userId));
+                    const userData = userDoc.exists() ? userDoc.data() : { username: "Unknown", studentId: "Unknown" };
+
                     const postElement = document.createElement("div");
                     postElement.className = "post";
                     postElement.innerHTML = `
                         ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
+                        <p><strong>Username:</strong> ${userData.username}</p>
+                        <p><strong>Student ID:</strong> ${userData.studentId}</p>
                         <p><strong>Description:</strong> ${post.description}</p>
                         <p><strong>Category:</strong> ${post.category}</p>
                         <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
@@ -105,7 +110,7 @@
                     } else if (post.category === "found") {
                         foundSection.appendChild(postElement);
                     }
-                });
+                }
             } catch (error) {
                 console.error("Error fetching posts:", error);
             }
@@ -136,7 +141,7 @@
 
                 let imageUrl = null;
                 if (image) {
-                    const imageRef = ref(storage, `images/${user.uid}/${Date.now()}_${image.name}`);
+             const imageRef = ref(storage, `images/${user.uid}/${Date.now()}_${image.name}`);
                     await uploadBytes(imageRef, image);
                     imageUrl = await getDownloadURL(imageRef);
                 }

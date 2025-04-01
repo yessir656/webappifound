@@ -13,6 +13,7 @@
     <div class="container">
         <div id="register">
             <h2>Register</h2>
+            <input type="text" id="username" placeholder="Username">
             <input type="text" id="studentId" placeholder="Student ID">
             <input type="email" id="registerEmail" placeholder="Email">
             <input type="password" id="registerPassword" placeholder="Password">
@@ -37,31 +38,36 @@
             measurementId: "G-2LGQZ7VY6P"
         };
 
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
         document.getElementById("registerButton").addEventListener("click", async () => {
-    const studentId = document.getElementById("studentId").value;
-    const email = document.getElementById("registerEmail").value;
-    const password = document.getElementById("registerPassword").value;
+            const username = document.getElementById("username").value;
+            const studentId = document.getElementById("studentId").value;
+            const email = document.getElementById("registerEmail").value;
+            const password = document.getElementById("registerPassword").value;
 
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await setDoc(doc(db, "users", user.uid), {
-            studentId: studentId,
-            password: password,
-            email: email,
-            uid: user.uid
+            if (!username || !studentId || !email || !password) {
+                alert("All fields are required!");
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await setDoc(doc(db, "users", user.uid), {
+                    username: username,
+                    studentId: studentId,
+                    email: email,
+                    uid: user.uid
+                });
+                alert("Registration Successful!");
+                window.location.href = "login.html"; // Redirect to login page
+            } catch (error) {
+                alert(error.message);
+            }
         });
-        alert("Registration Successful!");
-        window.location.href = "login.html"; // Redirect to login page
-    } catch (error) {
-        alert(error.message);
-    }
-});
 
     </script>
 </body>
