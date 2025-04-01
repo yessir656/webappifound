@@ -3,80 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Navbar</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        .navbar {
-            display: flex;
-            align-items: center;
-            background-color: white;
-            padding: 10px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .logo {
-            width: 40px;
-            height: 40px;
-            background-color: #1877F2;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-        .search {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            background-color: #f0f2f5;
-            padding: 8px 12px;
-            border-radius: 20px;
-        }
-        .search input {
-            border: none;
-            background: none;
-            outline: none;
-            width: 100%;
-        }
-        .icons {
-            display: flex;
-            gap: 20px;
-        }
-        .icon {
-            width: 30px;
-            height: 30px;
-            background-color: #f0f2f5;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .active {
-            color: #1877F2;
-            border-bottom: 3px solid #1877F2;
-        }
-    </style>
+    <title>IFound Navbar</title>
+    <link rel="stylesheet" href="mainpage.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
 </head>
 <body>
     <div class="navbar">
-        <div class="logo">f</div>
-        <div class="search">
-            <input type="text" placeholder="Search Facebook">
+        <div class="logo">
+            <img src="4.png" alt="Logo">
         </div>
-        <div class="icons">
-            <div class="icon active">🏠</div>
-            <div class="icon">📺</div>
-            <div class="icon">🏪</div>
-            <div class="icon">👥</div>
-            <div class="icon">🎮</div>
+        <div class="search">
+            <input type="text" placeholder="Search">
         </div>
     </div>
+    <div class="content">
+        <div id="lost-section" class="section active">
+            <h2>Lost Items</h2>
+        </div>
+        <div id="found-section" class="section">
+            <h2>Found Items</h2>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="icon active" onclick="showSection('lost')">Lost</div>
+        <div class="icon" onclick="showSection('found')">Found</div>
+        <div class="icon" onclick="togglePostForm()">+</div>
+    </div>
+    <div class="floating-form" id="postForm">
+        <h2>Post an Item</h2>
+        <form id="postItemForm">
+            <label for="image">Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4"></textarea>
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                <option value="lost">Lost</option>
+                <option value="found">Found</option>
+            </select>
+            <button type="submit">Post</button>
+        </form>
+    </div>
+    <script type="module">
+        // Firebase configuration
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJHgD-oUB2h5rVvB0ISDR_pyqMpt9Gdn0",
+            authDomain: "webapplostandfound.firebaseapp.com",
+            projectId: "webapplostandfound",
+            storageBucket: "webapplostandfound.appspot.com",
+            messagingSenderId: "23544433053",
+            appId: "1:23544433053:web:ad48cddc2b2f39407c4774",
+            measurementId: "G-2LGQZ7VY6P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // Check if user is authenticated
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                alert("You must be logged in to post an item.");
+                window.location.href = "index.html"; // Redirect to login page
+            }
+        });
+
+        async function fetchPosts() {
+            try {
+                const postsQuery = query(collection(db, "posts"));
+                const querySnapshot = await getDocs(postsQuery);
+
+                const lostSection = document.getElementById("lost-section");
+                const foundSection = document.getElementById("found-section");
+
+                // Clear existing content
+                lostSection.innerHTML = "<h2>Lost Items</h2>";
+                foundSection.innerHTML = "<h2>Found Items</h2>";
+
+                querySnapshot.forEach((doc) => {
+                    const post = doc.data();
+                    const postElement = document.createElement("div");
+                    postElement.className = "post";
+                    postElement.innerHTML = `
+                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
+                        <p><strong>Description:</strong> ${post.description}</p>
+                        <p><strong>Category:</strong> ${post.category}</p>
+                        <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
+                    `;
+
+                    if (post.category === "lost") {
+                        lostSection.appendChild(postElement);
+                    } else if (post.category === "found") {
+                        foundSection.appendChild(postElement);
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+            }
+        }
+
+        // Fetch posts on page load
+        window.addEventListener("load", fetchPosts);
+
+        // Handle form submission
+        document.getElementById("postItemForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const image = document.getElementById("image").files[0];
+            const description = document.getElementById("description").value;
+            const category = document.getElementById("category").value;
+
+            if (!description || !category) {
+                alert("Description and category are required!");
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    alert("You must be logged in to post an item.");
+                    return;
+                }
+
+                let imageUrl = null;
+                if (image) {
+                    const imageRef = ref(storage, `images/${user.uid}/${Date.now()}_${image.name}`);
+                    await uploadBytes(imageRef, image);
+                    imageUrl = await getDownloadURL(imageRef);
+                }
+
+                // Save post to Firestore
+                await addDoc(collection(db, "posts"), {
+                    userId: user.uid,
+                    description: description,
+                    category: category,
+                    imageUrl: imageUrl,
+                    timestamp: new Date().toISOString()
+                });
+
+                alert("Post submitted successfully!");
+                document.getElementById("postItemForm").reset();
+                await fetchPosts(); // Fetch and display updated posts
+            } catch (error) {
+                alert("Error posting item: " + error.message);
+            }
+        });
+    </script>
+    <script>
+        function showSection(section) {
+            document.getElementById('lost-section').style.display = section === 'lost' ? 'block' : 'none';
+            document.getElementById('found-section').style.display = section === 'found' ? 'block' : 'none';
+            document.querySelectorAll('.icon').forEach(icon => icon.classList.remove('active'));
+            document.querySelector(`.icon[onclick="showSection('${section}')"]`).classList.add('active');
+        }
+        function togglePostForm() {
+            const form = document.getElementById('postForm');
+            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+        }
+        
+    </script>
 </body>
 </html>
