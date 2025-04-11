@@ -90,8 +90,17 @@
 
                 for (const docSnapshot of querySnapshot.docs) {
                     const post = docSnapshot.data();
-                    const userDoc = await getDoc(doc(db, "users", post.userId));
-                    const userData = userDoc.exists() ? userDoc.data() : { username: "Unknown", studentId: "Unknown" };
+                    const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
+                    const userQuerySnapshot = await getDocs(userQuery);
+                    
+                    let userData;
+                    
+                    if (!userQuerySnapshot.empty) {
+                        const userDoc = userQuerySnapshot.docs[0];
+                        userData = userDoc.data(); // Get the data from the document
+                    } else {
+                        userData = { username: "Unknown", studentId: "Unknown" };
+                    }
 
                     const postElement = document.createElement("div");
                     postElement.className = "post";
