@@ -52,7 +52,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDJHgD-oUB2h5rVvB0ISDR_pyqMpt9Gdn0",
@@ -67,7 +67,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         // Check if user is authenticated
         onAuthStateChanged(auth, (user) => {
@@ -141,9 +140,23 @@
 
                 let imageUrl = null;
                 if (image) {
-             const imageRef = ref(storage, `images/${user.uid}/${Date.now()}_${image.name}`);
-                    await uploadBytes(imageRef, image);
-                    imageUrl = await getDownloadURL(imageRef);
+                    // Upload image to Cloudinary
+                    const formData = new FormData();
+                    formData.append("file", image);
+                    formData.append("upload_preset", "ifound"); // Replace with your Cloudinary upload preset
+                    formData.append("cloud_name", "dyvk0urit"); // Replace with your Cloudinary cloud name
+
+                    const response = await fetch("https://api.cloudinary.com/v1_1/dyvk0urit/image/upload", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to upload image to Cloudinary");
+                    }
+
+                    const data = await response.json();
+                    imageUrl = data.secure_url; // Get the uploaded image URL
                 }
 
                 // Save post to Firestore
@@ -178,3 +191,4 @@
     </script>
 </body>
 </html>
+``` 
