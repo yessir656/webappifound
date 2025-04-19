@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main_chat.css">
-    <title>IFound</title>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+    <title>IFound Chat</title>
 </head>
 <body>
     <!-- Recent Chat Display-->
@@ -19,7 +23,7 @@
                 <i class="search-icon">🔍</i> 
             </button>
         </div>
-        <div class="recent_list"></div>
+        <!-- <div class="recent_list"></div> -->
     </div>
 
     <!-- Main Chat Display -->
@@ -32,11 +36,15 @@
             <img src="img/image.png" class="image_icon" alt="Send">
             <input type="text" class="message_input" placeholder="Type a message...">
             <img src="img/send__icon.png" class="send_icon" alt="Send">
-        </div>        
+        </div>
     </div>
 
     <!-- Additional Info Display -->
     <div class="profile">
     </div>
+
+
+    <script type="module" src="firebase/recent_chat.js"></script>
+
 </body>
 </html>

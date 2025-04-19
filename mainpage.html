@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IFound Navbar</title>
     <link rel="stylesheet" href="mainpage.css">
+    <script src="Chat/firebase/recent_chat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
@@ -26,11 +27,13 @@
         <div id="found-section" class="section">
             <h2>Found Items</h2>
         </div>
+        
     </div>
     <div class="footer">
         <div class="icon active" onclick="showSection('lost')">Lost</div>
         <div class="icon" onclick="showSection('found')">Found</div>
         <div class="icon" onclick="togglePostForm()">+</div>
+        <div class="icon" onclick="window.location.href='Chat/main_chat.html'">Chat</div>
     </div>
     <div class="floating-form" id="postForm">
         <h2>Post an Item</h2>
@@ -51,7 +54,7 @@
         // Firebase configuration
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -80,7 +83,7 @@
             try {
                 const postsQuery = query(collection(db, "posts"));
                 const querySnapshot = await getDocs(postsQuery);
-
+ 
                 const lostSection = document.getElementById("lost-section");
                 const foundSection = document.getElementById("found-section");
 
@@ -92,33 +95,54 @@
                     const post = docSnapshot.data();
                     const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
                     const userQuerySnapshot = await getDocs(userQuery);
-                    
-                    let userData;
-                    
-                    if (!userQuerySnapshot.empty) {
-                        const userDoc = userQuerySnapshot.docs[0];
-                        userData = userDoc.data(); // Get the data from the document
-                    } else {
-                        userData = { username: "Unknown", studentId: "Unknown" };
-                    }
 
-                    const postElement = document.createElement("div");
-                    postElement.className = "post";
-                    postElement.innerHTML = `
-                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
-                        <p><strong>Username:</strong> ${userData.username}</p>
-                        <p><strong>Student ID:</strong> ${userData.studentId}</p>
-                        <p><strong>Description:</strong> ${post.description}</p>
-                        <p><strong>Category:</strong> ${post.category}</p>
-                        <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
-                    `;
+                let userData;
 
-                    if (post.category === "lost") {
-                        lostSection.appendChild(postElement);
-                    } else if (post.category === "found") {
-                        foundSection.appendChild(postElement);
-                    }
+                if (!userQuerySnapshot.empty) {
+                    const userDoc = userQuerySnapshot.docs[0];
+                    userData = userDoc.data();
+                } else {
+                    userData = { username: "Unknown", studentId: "Unknown" };
                 }
+
+                const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
+
+                const postElement = document.createElement("div");
+                postElement.className = "post";
+                postElement.innerHTML = `
+                ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
+                    <p><strong>Username:</strong> ${userData.username}</p>
+                    <p><strong>Student ID:</strong> ${userData.studentId}</p>
+                    <p><strong>Description:</strong> ${post.description}</p>
+                    <p><strong>Category:</strong> ${post.category}</p>
+                    <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
+                    <img src="Chat/img/bubble-chat.png" class="chat-icon" style="width:30px; height:30px; cursor:pointer;">
+                `;
+
+                const chatIcon = postElement.querySelector(".chat-icon");
+                chatIcon.addEventListener("click", async () => {
+                try {
+                    await setDoc(doc(db, "chatrooms", roomId), {
+                    chatRoomId: roomId,
+                    users: [post.userId, auth.currentUser.uid],
+                    timestamp: Date.now(),
+                    lastMessage: ""
+                    });
+                    alert("Chatroom created with custom ID");
+                    window.location.href = `chat.html?roomid=${encodeURIComponent(roomId)}`;
+                } catch (error) {
+                    alert("Error creating chatroom: " + error.message);
+                }
+                });
+
+
+                if (post.category === "lost") {
+                lostSection.appendChild(postElement);
+                } else if (post.category === "found") {
+                foundSection.appendChild(postElement);
+                }
+                }
+
             } catch (error) {
                 console.error("Error fetching posts:", error);
             }

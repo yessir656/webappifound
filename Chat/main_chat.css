@@ -140,12 +140,28 @@ body {
 .recent_list {
     margin-top: 20px;
     width: 100%;
-    background-color: wheat;
+    background-color: #202020;
     min-height: 50px; 
     padding: 10px; 
     box-sizing: border-box; 
     border-radius: 5px; 
-    margin: 5px 0; 
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.chat-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: white;
+}
+
+.chat-message {
+    font-size: 14px;
+    color: #666;
 }
 
 
