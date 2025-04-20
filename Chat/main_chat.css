@@ -155,12 +155,12 @@ body {
 
 .chat-name {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     color: white;
 }
 
 .chat-message {
-    font-size: 14px;
+    font-size: 16px;
     color: #666;
 }
 
@@ -168,17 +168,28 @@ body {
 /* MAIN CHAT */
 
 .user_profile {
+    position: absolute;
+    box-sizing: border-box;
+    left: 0;
+    width: 100%;
     display: flex;
-    gap: 15px;
+    align-items: center;  
+    gap: 10px;
     padding: 10px;
-    border-radius: 10px;
     color: white;
-    flex-shrink: 0; /* Prevent shrinking */
+    border-bottom: 1px solid #444;
 }
 
 .user_icon {
     width: 30px;
     height: 30px;
+
+    object-fit: contain;
+}
+
+.chatmate {
+    margin: 0; 
+    font-size: 22px; 
 }
 
 .send_message {
@@ -188,7 +199,7 @@ body {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
     padding: 10px;
     border-top: 1px solid #444;
     box-sizing: border-box;
@@ -231,3 +242,63 @@ body {
     transform: scale(1.1); 
 }
 
+.message-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.message {
+    display: flex;
+    max-width: 70%;
+    padding: 8px 12px;
+    border-radius: 18px;
+    margin-bottom: 5px;
+    word-wrap: break-word;
+}
+
+.message-left {
+    align-self: flex-start;
+    background-color: #f1f1f1;
+    margin-right: auto;
+    flex-direction: row;
+}
+
+.message-right {
+    align-self: flex-end;
+    background-color: #007bff;
+    color: white;
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.message-right .message-avatar {
+    margin-right: 0;
+    margin-left: 8px;
+}
+
+.message-text {
+    flex: 1;
+}
+
+.message-time {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+.no-messages {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
