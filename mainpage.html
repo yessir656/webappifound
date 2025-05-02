@@ -52,6 +52,7 @@
     </div>
     <script type="module">
         // Firebase configuration
+        import { Chatroom } from './Chat/model/chatroom.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -122,17 +123,19 @@
                 const chatIcon = postElement.querySelector(".chat-icon");
                 chatIcon.addEventListener("click", async () => {
                 try {
-                    await setDoc(doc(db, "chatrooms", roomId), {
-                    chatRoomId: roomId,
-                    users: [post.userId, auth.currentUser.uid],
-                    timestamp: Date.now(),
-                    lastMessage: ""
-                    });
-                    alert("Chatroom created with custom ID");
+
+                    const newChatroom = new Chatroom(
+                        roomId,
+                        [post.userId, auth.currentUser.uid]
+                    );
+
+                    await setDoc(doc(db, "Chatrooms", roomId), newChatroom.toFirestore());
+
+                    alert("Chatroom created!");
                     window.location.href = `chat.html?roomid=${encodeURIComponent(roomId)}`;
                 } catch (error) {
                     alert("Error creating chatroom: " + error.message);
-                }
+                    }
                 });
 
 
