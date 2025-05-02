@@ -102,7 +102,7 @@ export async function getChatMessages(otherId, chatRoomId){
             if (!chatroomSnap.exists()) {
                 throw new Error("Chatroom not found");
             }
-    
+
             // 2. Extract the other user's ID
             const chatroomData = chatroomSnap.data();
             const [uid1, uid2] = chatroomData.users;
@@ -154,3 +154,41 @@ export async function getChatMessages(otherId, chatRoomId){
             });
         }
     });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const imgIcon = document.querySelector('.image_icon');
+        
+        if (imgIcon) {
+          // Create hidden file input
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.style.display = 'none';
+          document.body.appendChild(fileInput);
+      
+          // Create preview container (dynamically)
+          const previewDiv = document.createElement('div');
+          previewDiv.className = 'image-preview';
+          imgIcon.insertAdjacentElement('afterend', previewDiv);
+      
+          // Make image clickable
+          imgIcon.style.cursor = 'pointer';
+          imgIcon.addEventListener('click', () => fileInput.click());
+      
+          // Handle file selection and display
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                previewDiv.innerHTML = ''; // Clear previous
+                const previewImg = document.createElement('img');
+                previewImg.src = event.target.result;
+                previewImg.style.maxHeight = '150px';
+                previewDiv.appendChild(previewImg);
+              };
+              reader.readAsDataURL(file);
+            }
+          });
+        }
+      });
