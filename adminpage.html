@@ -33,6 +33,36 @@
         <button id="addStudentIdButton">Add Student ID</button>
         <br><br>
         <a href="mainpage.html" class="button">Go to Main Page</a>
+
+        <h3>Deleted Posts</h3>
+        <table id="deletedPostsTable">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Deleted At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Deleted posts will be dynamically added here -->
+            </tbody>
+        </table>
+
+        <h3>Posts</h3>
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Posted By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Posts will be dynamically added here -->
+            </tbody>
+        </table>
     </div>
 
     <script type="module">
@@ -146,6 +176,69 @@
         });
 
         loadUsers();
+
+        // Function to load deleted posts from localStorage
+        function loadDeletedPosts() {
+            const deletedPostsTable = document.getElementById("deletedPostsTable").querySelector("tbody");
+            const deletedPost = JSON.parse(localStorage.getItem("deletedPost"));
+
+            if (deletedPost) {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${deletedPost.description}</td>
+                    <td>${deletedPost.category}</td>
+                    <td>${new Date().toLocaleString()}</td>
+                `;
+                deletedPostsTable.appendChild(row);
+
+                // Clear the deleted post from localStorage after displaying
+                localStorage.removeItem("deletedPost");
+            }
+        }
+
+        // Periodically check for deleted posts
+        setInterval(loadDeletedPosts, 1000);
+
+        // Function to load posts from Firestore
+        async function loadPosts() {
+            const querySnapshot = await getDocs(collection(db, "posts"));
+            const postsTable = document.getElementById("postsTable").querySelector("tbody");
+            postsTable.innerHTML = ""; // Clear existing rows
+
+            querySnapshot.forEach((doc) => {
+                const post = doc.data();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>
+                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100px; height: auto; border-radius: 8px;">` : "No Image"}
+                    </td>
+                    <td>${post.description}</td>
+                    <td>${post.category}</td>
+                    <td>${post.userId || "Unknown"}</td>
+                    <td>
+                        <button class="deletePost" data-id="${doc.id}">Delete</button>
+                    </td>
+                `;
+                postsTable.appendChild(row);
+            });
+        }
+
+        // Event listener for deleting posts
+        document.addEventListener("click", async (event) => {
+            if (event.target.classList.contains("deletePost")) {
+                const postId = event.target.getAttribute("data-id");
+                try {
+                    await deleteDoc(doc(db, "posts", postId)); // Delete the post from Firestore
+                    alert("Post deleted successfully");
+                    loadPosts(); // Refresh the posts table
+                } catch (error) {
+                    alert("Error deleting post: " + error.message);
+                }
+            }
+        });
+
+        // Load posts on page load
+        loadPosts();
     </script>
 </body>
 </html>

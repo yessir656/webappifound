@@ -55,7 +55,7 @@
         import { Chatroom } from './Chat/model/chatroom.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -80,15 +80,17 @@
             }
         });
 
-        async function fetchPosts() {
+        async function fetchPosts(searchQuery = "") {
             try {
+                console.log("Fetching posts with search query:", searchQuery); // Debugging log
+
                 const postsQuery = query(collection(db, "posts"));
                 const querySnapshot = await getDocs(postsQuery);
- 
+
                 const lostSection = document.getElementById("lost-section");
                 const foundSection = document.getElementById("found-section");
 
-                // Clear existing content
+                // Clear existing content to prevent duplication
                 lostSection.innerHTML = "<h2>Lost Items</h2>";
                 foundSection.innerHTML = "<h2>Found Items</h2>";
 
@@ -97,59 +99,97 @@
                     const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
                     const userQuerySnapshot = await getDocs(userQuery);
 
-                let userData;
+                    let userData;
 
-                if (!userQuerySnapshot.empty) {
-                    const userDoc = userQuerySnapshot.docs[0];
-                    userData = userDoc.data();
-                } else {
-                    userData = { username: "Unknown", studentId: "Unknown" };
-                }
-
-                const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
-
-                const postElement = document.createElement("div");
-                postElement.className = "post";
-                postElement.innerHTML = `
-                ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
-                    <p><strong>Username:</strong> ${userData.username}</p>
-                    <p><strong>Student ID:</strong> ${userData.studentId}</p>
-                    <p><strong>Description:</strong> ${post.description}</p>
-                    <p><strong>Category:</strong> ${post.category}</p>
-                    <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
-                    <img src="Chat/img/bubble-chat.png" class="chat-icon" style="width:30px; height:30px; cursor:pointer;">
-                `;
-
-                const chatIcon = postElement.querySelector(".chat-icon");
-                chatIcon.addEventListener("click", async () => {
-                try {
-
-                    const newChatroom = new Chatroom(
-                        roomId,
-                        [post.userId, auth.currentUser.uid]
-                    );
-
-                    await setDoc(doc(db, "Chatrooms", roomId), newChatroom.toFirestore());
-
-                    alert("Chatroom created!");
-                    window.location.href = `chat.html?roomid=${encodeURIComponent(roomId)}`;
-                } catch (error) {
-                    alert("Error creating chatroom: " + error.message);
+                    if (!userQuerySnapshot.empty) {
+                        const userDoc = userQuerySnapshot.docs[0];
+                        userData = userDoc.data();
+                    } else {
+                        userData = { username: "Unknown", studentId: "Unknown" };
                     }
-                });
 
+                    // Filter posts based on the search query
+                    if (
+                        searchQuery &&
+                        !(
+                            userData.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            post.description.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                    ) {
+                        continue;
+                    }
 
-                if (post.category === "lost") {
-                lostSection.appendChild(postElement);
-                } else if (post.category === "found") {
-                foundSection.appendChild(postElement);
+                    const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
+
+                    const postElement = document.createElement("div");
+                    postElement.className = "post";
+                    postElement.style.position = "relative"; // Ensure positioning for the close button
+                    postElement.innerHTML = `
+                        ${auth.currentUser && auth.currentUser.uid === post.userId ? `
+                            <button class="close-btn" style="position: absolute; top: 10px; right: 10px;">&times;</button>
+                        ` : ""}
+                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
+                        <p><strong>Username:</strong> ${userData.username}</p>
+                        <p><strong>Student ID:</strong> ${userData.studentId}</p>
+                        <p><strong>Description:</strong> ${post.description}</p>
+                        <p><strong>Category:</strong> ${post.category}</p>
+                        <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
+                        <img src="Chat/img/bubble-chat.png" class="chat-icon" style="width:30px; height:30px; cursor:pointer;">
+                    `;
+
+                    const chatIcon = postElement.querySelector(".chat-icon");
+                    chatIcon.addEventListener("click", async () => {
+                        try {
+                            const newChatroom = new Chatroom(
+                                roomId,
+                                [post.userId, auth.currentUser.uid]
+                            );
+
+                            await setDoc(doc(db, "Chatrooms", roomId), newChatroom.toFirestore());
+
+                            alert("Chatroom created!");
+                            window.location.href = `chat.html?roomid=${encodeURIComponent(roomId)}`;
+                        } catch (error) {
+                            alert("Error creating chatroom: " + error.message);
+                        }
+                    });
+
+                    const closeButton = postElement.querySelector(".close-btn");
+                    if (closeButton) {
+                        closeButton.addEventListener("click", async () => {
+                            try {
+                                await deleteDoc(doc(db, "posts", docSnapshot.id)); // Delete the post from Firestore
+                                postElement.remove(); // Remove the post element from the DOM
+                                alert("Post deleted successfully.");
+                            } catch (error) {
+                                console.error("Error deleting post:", error);
+                                alert("Failed to delete the post.");
+                            }
+                        });
+                    }
+
+                    if (post.category === "lost") {
+                        lostSection.appendChild(postElement);
+                    } else if (post.category === "found") {
+                        foundSection.appendChild(postElement);
+                    }
                 }
-                }
-
             } catch (error) {
                 console.error("Error fetching posts:", error);
             }
         }
+
+        // Listen for deleted posts and update the admin page
+        onSnapshot(collection(db, "posts"), (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "removed") {
+                    const deletedPost = change.doc.data();
+                    console.log("Post deleted:", deletedPost); // Debugging log
+                    // Notify admin page about the deleted post
+                    localStorage.setItem("deletedPost", JSON.stringify(deletedPost));
+                }
+            });
+        });
 
         // Fetch posts on page load
         window.addEventListener("load", fetchPosts);
@@ -227,4 +267,3 @@
     </script>
 </body>
 </html>
-``` 
