@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IFound Navbar</title>
     <link rel="stylesheet" href="mainpage.css">
+    <script src="Chat/firebase/recent_chat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
@@ -16,7 +17,7 @@
             <img src="4.png" alt="Logo">
         </div>
         <div class="search">
-            <input type="text" id="searchInput" placeholder="Search">
+            <input type="text" placeholder="Search">
         </div>
     </div>
     <div class="content">
@@ -26,11 +27,13 @@
         <div id="found-section" class="section">
             <h2>Found Items</h2>
         </div>
+        
     </div>
     <div class="footer">
         <div class="icon active" onclick="showSection('lost')">Lost</div>
         <div class="icon" onclick="showSection('found')">Found</div>
         <div class="icon" onclick="togglePostForm()">+</div>
+        <div class="icon" onclick="window.location.href='Chat/main_chat.html'">Chat</div>
     </div>
     <div class="floating-form" id="postForm">
         <h2>Post an Item</h2>
@@ -49,9 +52,10 @@
     </div>
     <script type="module">
         // Firebase configuration
+        import { Chatroom } from './Chat/model/chatroom.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -90,8 +94,6 @@
                 lostSection.innerHTML = "<h2>Lost Items</h2>";
                 foundSection.innerHTML = "<h2>Found Items</h2>";
 
-                let postCount = 0; // Debugging: Count posts being appended
-
                 for (const docSnapshot of querySnapshot.docs) {
                     const post = docSnapshot.data();
                     const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
@@ -101,7 +103,7 @@
 
                     if (!userQuerySnapshot.empty) {
                         const userDoc = userQuerySnapshot.docs[0];
-                        userData = userDoc.data(); // Get the data from the document
+                        userData = userDoc.data();
                     } else {
                         userData = { username: "Unknown", studentId: "Unknown" };
                     }
@@ -117,34 +119,41 @@
                         continue;
                     }
 
+                    const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
+
                     const postElement = document.createElement("div");
                     postElement.className = "post";
                     postElement.style.position = "relative"; // Ensure positioning for the close button
-                    postElement.style.border = "1px solid #ccc";
-                    postElement.style.borderRadius = "8px";
-                    postElement.style.padding = "16px";
-                    postElement.style.marginBottom = "16px";
-                    postElement.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-                    postElement.style.backgroundColor = "#fff";
-
-                    const currentUser = auth.currentUser;
-
                     postElement.innerHTML = `
-                        ${currentUser && currentUser.uid === post.userId ? `
-                            <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer;">&times;</button>
+                        ${auth.currentUser && auth.currentUser.uid === post.userId ? `
+                            <button class="close-btn" style="position: absolute; top: 10px; right: 10px;">&times;</button>
                         ` : ""}
-                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;">` : ""}
-                        <div style="text-align: left; margin-bottom: 10px;">
-                            <p><strong>Username:</strong> ${userData.username}</p>
-                            <p><strong>Student ID:</strong> ${userData.studentId}</p>
-                            <p><strong>Description:</strong> ${post.description}</p>
-                            <p><strong>Category:</strong> ${post.category}</p>
-                            <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
-                        </div>
-                        <button class="claim-btn" style="display: block; margin: 0 auto; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;">Claim</button>
+                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
+                        <p><strong>Username:</strong> ${userData.username}</p>
+                        <p><strong>Student ID:</strong> ${userData.studentId}</p>
+                        <p><strong>Description:</strong> ${post.description}</p>
+                        <p><strong>Category:</strong> ${post.category}</p>
+                        <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
+                        <img src="Chat/img/bubble-chat.png" class="chat-icon" style="width:30px; height:30px; cursor:pointer;">
                     `;
 
-                    // Add event listener for the close button if it exists
+                    const chatIcon = postElement.querySelector(".chat-icon");
+                    chatIcon.addEventListener("click", async () => {
+                        try {
+                            const newChatroom = new Chatroom(
+                                roomId,
+                                [post.userId, auth.currentUser.uid]
+                            );
+
+                            await setDoc(doc(db, "Chatrooms", roomId), newChatroom.toFirestore());
+
+                            alert("Chatroom created!");
+                            window.location.href = `chat.html?roomid=${encodeURIComponent(roomId)}`;
+                        } catch (error) {
+                            alert("Error creating chatroom: " + error.message);
+                        }
+                    });
+
                     const closeButton = postElement.querySelector(".close-btn");
                     if (closeButton) {
                         closeButton.addEventListener("click", async () => {
@@ -159,21 +168,12 @@
                         });
                     }
 
-                    // Add event listener for the claim button
-                    postElement.querySelector(".claim-btn").addEventListener("click", () => {
-                        alert("Claim button clicked for this post!");
-                    });
-
                     if (post.category === "lost") {
                         lostSection.appendChild(postElement);
                     } else if (post.category === "found") {
                         foundSection.appendChild(postElement);
                     }
-
-                    postCount++; // Increment post count
                 }
-
-                console.log(`Total posts appended: ${postCount}`); // Debugging log
             } catch (error) {
                 console.error("Error fetching posts:", error);
             }
@@ -192,17 +192,7 @@
         });
 
         // Fetch posts on page load
-        window.addEventListener("load", () => {
-            console.log("Page loaded, fetching posts..."); // Debugging log
-            fetchPosts();
-        });
-
-        // Add event listener to the search input
-        document.getElementById("searchInput").addEventListener("input", (e) => {
-            const searchQuery = e.target.value.trim();
-            console.log("Search input changed:", searchQuery); // Debugging log
-            fetchPosts(searchQuery); // Fetch posts with the search query
-        });
+        window.addEventListener("load", fetchPosts);
 
         // Handle form submission
         document.getElementById("postItemForm").addEventListener("submit", async (e) => {
