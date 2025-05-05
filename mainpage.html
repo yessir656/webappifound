@@ -95,6 +95,9 @@
                 lostSection.innerHTML = "<h2>Lost Items</h2>";
                 foundSection.innerHTML = "<h2>Found Items</h2>";
 
+                let foundInLost = false;
+                let foundInFound = false;
+
                 for (const docSnapshot of querySnapshot.docs) {
                     const post = docSnapshot.data();
                     const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
@@ -148,8 +151,19 @@
 
                     if (post.category === "lost") {
                         lostSection.appendChild(postElement);
+                        foundInLost = true;
                     } else if (post.category === "found") {
                         foundSection.appendChild(postElement);
+                        foundInFound = true;
+                    }
+                }
+
+                // Automatically switch to the correct section
+                if (searchQuery) {
+                    if (foundInLost && !foundInFound) {
+                        showSection('lost');
+                    } else if (foundInFound && !foundInLost) {
+                        showSection('found');
                     }
                 }
             } catch (error) {
