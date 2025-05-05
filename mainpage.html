@@ -17,7 +17,8 @@
             <img src="4.png" alt="Logo">
         </div>
         <div class="search">
-            <input type="text" placeholder="Search">
+            <input type="text" id="searchInput" placeholder="Search">
+            <button id="searchButton">Search</button>
         </div>
     </div>
     <div class="content">
@@ -82,7 +83,7 @@
 
         async function fetchPosts(searchQuery = "") {
             try {
-                console.log("Fetching posts with search query:", searchQuery); // Debugging log
+                console.log("Fetching posts with search query:", searchQuery);
 
                 const postsQuery = query(collection(db, "posts"));
                 const querySnapshot = await getDocs(postsQuery);
@@ -99,13 +100,9 @@
                     const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
                     const userQuerySnapshot = await getDocs(userQuery);
 
-                    let userData;
-
+                    let userData = { username: "Unknown", studentId: "Unknown" };
                     if (!userQuerySnapshot.empty) {
-                        const userDoc = userQuerySnapshot.docs[0];
-                        userData = userDoc.data();
-                    } else {
-                        userData = { username: "Unknown", studentId: "Unknown" };
+                        userData = userQuerySnapshot.docs[0].data();
                     }
 
                     // Filter posts based on the search query
@@ -113,20 +110,19 @@
                         searchQuery &&
                         !(
                             userData.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            userData.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             post.description.toLowerCase().includes(searchQuery.toLowerCase())
                         )
                     ) {
                         continue;
                     }
 
-                    const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
-
                     const postElement = document.createElement("div");
                     postElement.className = "post";
                     postElement.style.position = "relative"; // Ensure positioning for the close button
                     postElement.innerHTML = `
                         ${auth.currentUser && auth.currentUser.uid === post.userId ? `
-                            <button class="close-btn" style="position: absolute; top: 10px; right: 10px;">&times;</button>
+                            <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer;">&times;</button>
                         ` : ""}
                         ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
                         <p><strong>Username:</strong> ${userData.username}</p>
@@ -134,25 +130,7 @@
                         <p><strong>Description:</strong> ${post.description}</p>
                         <p><strong>Category:</strong> ${post.category}</p>
                         <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
-                        <img src="Chat/img/bubble-chat.png" class="chat-icon" style="width:30px; height:30px; cursor:pointer;">
                     `;
-
-                    const chatIcon = postElement.querySelector(".chat-icon");
-                    chatIcon.addEventListener("click", async () => {
-                        try {
-                            const newChatroom = new Chatroom(
-                                roomId,
-                                [post.userId, auth.currentUser.uid]
-                            );
-
-                            await setDoc(doc(db, "Chatrooms", roomId), newChatroom.toFirestore());
-
-                            alert("Chatroom created!");
-                            window.location.href = `chat.html?roomid=${encodeURIComponent(roomId)}`;
-                        } catch (error) {
-                            alert("Error creating chatroom: " + error.message);
-                        }
-                    });
 
                     const closeButton = postElement.querySelector(".close-btn");
                     if (closeButton) {
@@ -179,6 +157,11 @@
             }
         }
 
+        // Ensure fetchPosts is called on page load
+        window.addEventListener("load", () => {
+            fetchPosts();
+        });
+
         // Listen for deleted posts and update the admin page
         onSnapshot(collection(db, "posts"), (snapshot) => {
             snapshot.docChanges().forEach((change) => {
@@ -191,8 +174,17 @@
             });
         });
 
-        // Fetch posts on page load
-        window.addEventListener("load", fetchPosts);
+        // Add event listener to the search button
+        document.getElementById("searchButton").addEventListener("click", () => {
+            const searchQuery = document.getElementById("searchInput").value.trim();
+            fetchPosts(searchQuery);
+        });
+
+        // Add event listener to the search input for real-time filtering
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            const searchQuery = e.target.value.trim();
+            fetchPosts(searchQuery);
+        });
 
         // Handle form submission
         document.getElementById("postItemForm").addEventListener("submit", async (e) => {
@@ -267,3 +259,4 @@
     </script>
 </body>
 </html>
+``` 

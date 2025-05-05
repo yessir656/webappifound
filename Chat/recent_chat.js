@@ -30,13 +30,19 @@ async function getRecentChats() {
                 getDocs(query(collection(db, "users"), where("uid", "==", otherUserId)))
                     .then((userQuerySnapshot) => {
                         if (!userQuerySnapshot.empty) {
+                            const userDoc = userQuerySnapshot.docs[0];
+                            if (!userDoc) {
+                                console.error("User document is undefined");
+                                return null;
+                            }
                             return {
                                 chatroomId: docSnapshot.id,
                                 chatData: chatroomData,
-                                userData: userQuerySnapshot.docs[0].data(),
+                                userData: userDoc.data(),
                                 otherUserId: otherUserId
                             };
                         }
+                        console.warn("No user found for UID:", otherUserId);
                         return null;
                     })
             );

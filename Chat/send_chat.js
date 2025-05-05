@@ -47,148 +47,180 @@ export async function getChatMessages(otherId, chatRoomId){
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-    function displayChatMessage(doc, container, otherUserData){
-        try{
-            const messageData = doc.data();
+function displayChatMessage(doc, container, otherUserData) {
+    try {
+        const messageData = doc?.data(); // Ensure doc exists
+        if (!messageData) {
+            console.error("Message data is undefined");
+            return;
+        }
+
         const isCurrentUser = messageData.sender === auth.currentUser.uid;
-            
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isCurrentUser ? 'message-right' : 'message-left'}`;
-            
+
         if (!isCurrentUser) {
             const senderAvatar = document.createElement('img');
             senderAvatar.src = otherUserData.photoURL || "img/user_icon.png";
             senderAvatar.className = 'message-avatar';
             senderAvatar.alt = 'Profile picture';
             messageDiv.appendChild(senderAvatar);
-            }
-            
+        }
+
         const messageContent = document.createElement('div');
         messageContent.className = 'message-text';
-        messageContent.textContent = messageData.text;
+        messageContent.textContent = messageData.text || "[No message text]";
         messageDiv.appendChild(messageContent);
-            
-            // Add timestamp if available
+
+        // Add timestamp if available
         if (messageData.timestamp) {
             const timeDiv = document.createElement('div');
             timeDiv.className = 'message-time';
             timeDiv.textContent = formatTime(messageData.timestamp.toDate());
             messageDiv.appendChild(timeDiv);
         }
-            
+
         container.appendChild(messageDiv);
-  
-        }catch( error ){
-            alert(error);
+    } catch (error) {
+        console.error("Error displaying chat message:", error);
+    }
+}
+
+function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function uploadImageToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "ifound"); // Replace with your Cloudinary upload preset
+    formData.append("cloud_name", "dyvk0urit"); // Replace with your Cloudinary cloud name
+
+    try {
+        const response = await fetch("https://api.cloudinary.com/v1_1/dyvk0urit/image/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to upload image to Cloudinary");
         }
-    }
 
-    function formatTime(date) {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const data = await response.json();
+        return data.secure_url; // Return the uploaded image URL
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
     }
+}
 
-    async function sendMessage(chatRoomId, message) {
+async function sendMessage(chatRoomId, message, imageFile = null) {
+    try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            console.error("No authenticated user");
+            return;
+        }
+
+        let imageUrl = null;
+        if (imageFile) {
+            imageUrl = await uploadImageToCloudinary(imageFile);
+        }
+
+        const chatroomRef = doc(db, "Chatrooms", chatRoomId);
+        const chatroomSnap = await getDoc(chatroomRef);
+
+        if (!chatroomSnap.exists()) {
+            console.error("Chatroom not found");
+            return;
+        }
+
+        const chatroomData = chatroomSnap.data();
+        if (!chatroomData) {
+            console.error("Chatroom data is undefined");
+            return;
+        }
+
+        const messagesRef = collection(db, "Chatrooms", chatRoomId, "chat");
+        await addDoc(messagesRef, {
+            sender: currentUser.uid,
+            text: message,
+            imageUrl: imageUrl,
+            timestamp: new Date(),
+        });
+
+        await updateDoc(chatroomRef, {
+            lastMessage: message || "Image sent",
+            lastUpdated: new Date(),
+            lastSender: currentUser.uid,
+        });
+
+        await getChatMessages(chatRoomId, chatRoomId);
+    } catch (error) {
+        console.error("Error sending message:", error);
+        throw error;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sendIcon = document.querySelector(".send_icon");
+    const imageInput = document.getElementById("imageInput");
+
+    sendIcon.addEventListener("click", async () => {
+        const messageInput = document.querySelector(".message_input");
+        const message = messageInput.value.trim();
+        const imageFile = imageInput.files[0];
+
+        if (!message && !imageFile) {
+            alert("Please enter a message or select an image to send.");
+            return;
+        }
+
         try {
-            const currentUser = auth.currentUser;
-            if (!currentUser) {
-                console.error("No authenticated user");
-                return;
-            }
-    
-            // 1. First get the chatroom document to find the other user
-            const chatroomRef = doc(db, "Chatrooms", chatRoomId);
-            const chatroomSnap = await getDoc(chatroomRef);
-            
-            if (!chatroomSnap.exists()) {
-                throw new Error("Chatroom not found");
-            }
-
-            // 2. Extract the other user's ID
-            const chatroomData = chatroomSnap.data();
-            const [uid1, uid2] = chatroomData.users;
-            const otherUserId = uid1 === currentUser.uid ? uid2 : uid1;
-            
-            if (!otherUserId) {
-                throw new Error("Other user not found in chatroom");
-            }
-    
-            // 3. Proceed with sending message
-            const messagesRef = collection(db, "Chatrooms", chatRoomId, "chat");
-            await addDoc(messagesRef, {
-                sender: currentUser.uid,
-                text: message,
-                timestamp: new Date()
-            });
-    
-            // 4. Update chatroom
-            await updateDoc(chatroomRef, {
-                lastMessage: message,
-                lastUpdated: new Date(),
-                lastSender: currentUser.uid // Track who sent last message
-            });
-    
-            // 5. Refresh messages (use the otherUserId we just found)
-            await getChatMessages(otherUserId, chatRoomId);
-    
+            await sendMessage(getChatRoomId(), message, imageFile);
+            messageInput.value = "";
+            imageInput.value = ""; // Clear the file input
         } catch (error) {
-            alert(error);
-            throw error; 
-        }
-    }
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const sendIcon = document.querySelector(".send_icon");
-        
-        if (sendIcon) {
-            sendIcon.addEventListener("click", async () => {
-                const messageInput = document.querySelector(".message_input");
-                if (messageInput && messageInput.value.trim()) {
-                    try {
-                        await sendMessage(getChatRoomId(), messageInput.value.trim());
-                        messageInput.value = '';
-                    } catch(error) {
-                        alert(error);
-                    }
-                }
-            });
+            alert("Error sending message: " + error.message);
         }
     });
+});
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const imgIcon = document.querySelector('.image_icon');
-        
-        if (imgIcon) {
-          // Create hidden file input
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          fileInput.style.display = 'none';
-          document.body.appendChild(fileInput);
-      
-          // Create preview container (dynamically)
-          const previewDiv = document.createElement('div');
-          previewDiv.className = 'image-preview';
-          imgIcon.insertAdjacentElement('afterend', previewDiv);
-      
-          // Make image clickable
-          imgIcon.style.cursor = 'pointer';
-          imgIcon.addEventListener('click', () => fileInput.click());
-      
-          // Handle file selection and display
-          fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                previewDiv.innerHTML = ''; // Clear previous
-                const previewImg = document.createElement('img');
-                previewImg.src = event.target.result;
-                previewImg.style.maxHeight = '150px';
-                previewDiv.appendChild(previewImg);
-              };
-              reader.readAsDataURL(file);
-            }
-          });
+document.addEventListener('DOMContentLoaded', () => {
+    const imgIcon = document.querySelector('.image_icon');
+    
+    if (imgIcon) {
+      // Create hidden file input
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.style.display = 'none';
+      fileInput.id = 'imageInput'; // Add ID for reference
+      document.body.appendChild(fileInput);
+  
+      // Create preview container (dynamically)
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'image-preview';
+      imgIcon.insertAdjacentElement('afterend', previewDiv);
+  
+      // Make image clickable
+      imgIcon.style.cursor = 'pointer';
+      imgIcon.addEventListener('click', () => fileInput.click());
+  
+      // Handle file selection and display
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            previewDiv.innerHTML = ''; // Clear previous
+            const previewImg = document.createElement('img');
+            previewImg.src = event.target.result;
+            previewImg.style.maxHeight = '150px';
+            previewDiv.appendChild(previewImg);
+          };
+          reader.readAsDataURL(file);
         }
       });
+    }
+  });

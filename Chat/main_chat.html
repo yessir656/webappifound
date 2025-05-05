@@ -14,7 +14,7 @@
     <!-- Recent Chat Display-->
     <div class="recent_chat">
         <div class="recent-chat-title">
-            <img src="img/4.png" alt="Description of image" class="logo">
+            <img src="img/4.png" alt="Description of image" class="logo" onclick="redirectToUserChat()">
             <h1 class="recent-title">Chats</h1>
         </div>
         <div class="search-container">
@@ -35,7 +35,8 @@
         </div>
         <div class="message-content"></div>
         <div class="send_message">
-            <img src="img/image.png" class="image_icon" alt="Send">
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <img src="img/image.png" class="image_icon" alt="Send" onclick="document.getElementById('imageInput').click();">
             <input type="text" class="message_input" placeholder="Type a message...">
             <img src="img/send__icon.png" class="send_icon" alt="Send">
         </div>
@@ -50,6 +51,21 @@
 
     <script type="module" src="recent_chat.js"></script>
     <script type="module" src="send_chat.js"></script>
+    <script type="module">
+        function redirectToUserChat() {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                const userChatRoomId = currentRoomId; // Use the current chat room ID
+                if (userChatRoomId) {
+                    getChatMessages(currentUser.uid, userChatRoomId);
+                } else {
+                    alert("No active chat room found.");
+                }
+            } else {
+                alert("You must be logged in to access your chat.");
+            }
+        }
+    </script>
 
 </body>
 </html>
