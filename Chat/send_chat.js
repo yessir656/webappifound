@@ -2,7 +2,7 @@ import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc, orde
 import { auth, db } from "./firebase/connect.js";
 import { getChatRoomId } from "./recent_chat.js";
 
-export async function getChatMessages(otherId, chatRoomId){
+export async function getChatMessages(otherId, chatRoomId) {
     // Get chatmate data
     const userQuery = query(
         collection(db, "users"),
@@ -10,8 +10,14 @@ export async function getChatMessages(otherId, chatRoomId){
     );
     const userQuerySnapshot = await getDocs(userQuery);
 
+    // Ensure the query result is not empty
+    if (userQuerySnapshot.empty || !userQuerySnapshot.docs[0]) {
+        console.error("No user data found for the given ID:", otherId);
+        return;
+    }
+
     const otherUserData = userQuerySnapshot.docs[0].data();
-        
+
     // Update name header
     const nameElements = document.getElementsByClassName('chatmate');
     if (nameElements.length > 0) {
@@ -49,17 +55,17 @@ export async function getChatMessages(otherId, chatRoomId){
 
 function displayChatMessage(doc, container, otherUserData) {
     try {
-        const messageData = doc?.data(); // Ensure doc exists
+        const messageData = doc?.data();
         if (!messageData) {
             console.error("Message data is undefined");
             return;
         }
 
-        const isCurrentUser = messageData.sender === auth.currentUser.uid;
+        const isCurrentUser = messageData.sender === auth.currentUser?.uid;
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isCurrentUser ? 'message-right' : 'message-left'}`;
 
-        if (!isCurrentUser) {
+        if (!isCurrentUser && otherUserData) {
             const senderAvatar = document.createElement('img');
             senderAvatar.src = otherUserData.photoURL || "img/user_icon.png";
             senderAvatar.className = 'message-avatar';
@@ -69,10 +75,24 @@ function displayChatMessage(doc, container, otherUserData) {
 
         const messageContent = document.createElement('div');
         messageContent.className = 'message-text';
-        messageContent.textContent = messageData.text || "[No message text]";
+
+        if (messageData.text) {
+            const textElement = document.createElement('p');
+            textElement.textContent = messageData.text;
+            messageContent.appendChild(textElement);
+        }
+
+        if (messageData.imageUrl) {
+            const imageElement = document.createElement('img');
+            imageElement.src = messageData.imageUrl;
+            imageElement.alt = "Sent image";
+            imageElement.style.maxWidth = "100%";
+            imageElement.style.borderRadius = "10px";
+            messageContent.appendChild(imageElement);
+        }
+
         messageDiv.appendChild(messageContent);
 
-        // Add timestamp if available
         if (messageData.timestamp) {
             const timeDiv = document.createElement('div');
             timeDiv.className = 'message-time';
@@ -124,31 +144,18 @@ async function sendMessage(chatRoomId, message, imageFile = null) {
 
         let imageUrl = null;
         if (imageFile) {
-            imageUrl = await uploadImageToCloudinary(imageFile);
-        }
-
-        const chatroomRef = doc(db, "Chatrooms", chatRoomId);
-        const chatroomSnap = await getDoc(chatroomRef);
-
-        if (!chatroomSnap.exists()) {
-            console.error("Chatroom not found");
-            return;
-        }
-
-        const chatroomData = chatroomSnap.data();
-        if (!chatroomData) {
-            console.error("Chatroom data is undefined");
-            return;
+            imageUrl = await uploadImageToCloudinary(imageFile); // Upload image and get URL
         }
 
         const messagesRef = collection(db, "Chatrooms", chatRoomId, "chat");
         await addDoc(messagesRef, {
             sender: currentUser.uid,
-            text: message,
-            imageUrl: imageUrl,
+            text: message || null, // Allow empty text if an image is sent
+            imageUrl: imageUrl, // Save the image URL
             timestamp: new Date(),
         });
 
+        const chatroomRef = doc(db, "Chatrooms", chatRoomId);
         await updateDoc(chatroomRef, {
             lastMessage: message || "Image sent",
             lastUpdated: new Date(),
@@ -223,4 +230,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
-  });
+});

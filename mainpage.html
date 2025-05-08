@@ -14,11 +14,15 @@
 <body>
     <div class="navbar">
         <div class="logo">
-            <img src="4.png" alt="Logo">
+            <a href="mainpage.html">
+                <img src="4.png" alt="Logo">
+            </a>
         </div>
         <div class="search">
             <input type="text" id="searchInput" placeholder="Search">
-            <button id="searchButton">Search</button>
+            <button id="searchButton">
+                <span class="magnifying-glass">&#128269;</span> <!-- Unicode for magnifying glass -->
+            </button>
         </div>
     </div>
     <div class="content">
@@ -133,6 +137,8 @@
                         <p><strong>Description:</strong> ${post.description}</p>
                         <p><strong>Category:</strong> ${post.category}</p>
                         <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
+                        <p><strong>Claims:</strong> <span class="claim-counter">${post.claimCount || 0}</span></p>
+                        <button class="claim-btn">Claim It</button>
                     `;
 
                     const closeButton = postElement.querySelector(".close-btn");
@@ -148,6 +154,25 @@
                             }
                         });
                     }
+
+                    const claimButton = postElement.querySelector(".claim-btn");
+                    claimButton.addEventListener("click", async () => {
+                        try {
+                            // Increment the claim count in Firestore
+                            const postRef = doc(db, "posts", docSnapshot.id);
+                            await setDoc(postRef, { claimCount: (post.claimCount || 0) + 1 }, { merge: true });
+
+                            // Update the claim counter in the UI
+                            const claimCounter = postElement.querySelector(".claim-counter");
+                            claimCounter.textContent = (post.claimCount || 0) + 1;
+
+                            // Redirect to the chat page with the post owner
+                            window.location.href = `Chat/main_chat.html?userId=${post.userId}`;
+                        } catch (error) {
+                            console.error("Error claiming post:", error);
+                            alert("Failed to claim the post.");
+                        }
+                    });
 
                     if (post.category === "lost") {
                         lostSection.appendChild(postElement);
@@ -273,4 +298,3 @@
     </script>
 </body>
 </html>
-``` 

@@ -4,6 +4,7 @@ import { auth, db } from "./firebase/connect.js";
 import { getChatMessages } from "./send_chat.js";
 
 let currentRoomId = null;
+let allChats = []; // Store all chats for filtering
 
 async function getRecentChats() {
     const currentUser = auth.currentUser;
@@ -48,20 +49,25 @@ async function getRecentChats() {
             );
         });
 
-        const allChats = (await Promise.all(chatPromises)).filter(chat => chat !== null);
+        allChats = (await Promise.all(chatPromises)).filter(chat => chat !== null); // Store all chats
         
         if (allChats.length === 0) {
             chatListContainer.innerHTML = '<div class="no-chats">No recent chats</div>';
             return;
         }
 
-        allChats.forEach(chat => {
-            createDivForRecentChats(chat, chatListContainer);
-        });
+        renderChats(allChats, chatListContainer);
     } catch (error) {
         console.error("Error loading chats:", error);
         chatListContainer.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
     }
+}
+
+function renderChats(chats, container) {
+    container.innerHTML = ''; // Clear the container
+    chats.forEach(chat => {
+        createDivForRecentChats(chat, container);
+    });
 }
 
 function createDivForRecentChats(chat, chatListContainer) {
@@ -100,6 +106,15 @@ function createDivForRecentChats(chat, chatListContainer) {
 
 export function getChatRoomId(){
     return currentRoomId;
+}
+
+export function filterChats(searchQuery) {
+    const filteredChats = allChats.filter(chat => 
+        chat.userData.username.toLowerCase().includes(searchQuery) ||
+        chat.chatData.lastMessage.toLowerCase().includes(searchQuery)
+    );
+    const chatListContainer = document.querySelector(".chat-list-container");
+    renderChats(filteredChats, chatListContainer);
 }
 
 onAuthStateChanged(auth, (user) => {

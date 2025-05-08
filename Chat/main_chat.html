@@ -18,9 +18,9 @@
             <h1 class="recent-title">Chats</h1>
         </div>
         <div class="search-container">
-            <input type="text" placeholder="Search chats..." class="search-input">
-            <button class="search-button">
-                <i class="search-icon">🔍</i> 
+            <input type="text" id="searchInput" placeholder="Search chats..." class="search-input">
+            <button id="searchButton" class="search-button">
+                <i class="search-icon">🔍</i>
             </button>
         </div>
         <div class="chat-list-container"></div>
@@ -52,6 +52,18 @@
     <script type="module" src="recent_chat.js"></script>
     <script type="module" src="send_chat.js"></script>
     <script type="module">
+        import { filterChats } from './recent_chat.js';
+
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+            filterChats(searchQuery);
+        });
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchQuery = e.target.value.trim().toLowerCase();
+            filterChats(searchQuery);
+        });
+
         function redirectToUserChat() {
             const currentUser = auth.currentUser;
             if (currentUser) {
@@ -65,6 +77,35 @@
                 alert("You must be logged in to access your chat.");
             }
         }
+    </script>
+    <script type="module">
+        import { listenToChatMessages, sendMessage } from './send_chat.js';
+        import { getChatRoomId } from './recent_chat.js';
+
+        // Example: Start listening to messages when a chat room is opened
+        const chatRoomId = getChatRoomId(); // Replace with the actual chat room ID
+        const otherUserId = "OTHER_USER_ID"; // Replace with the actual other user's ID
+        listenToChatMessages(chatRoomId, otherUserId);
+
+        document.querySelector(".send_icon").addEventListener("click", async () => {
+            const messageInput = document.querySelector(".message_input");
+            const imageInput = document.getElementById("imageInput");
+            const message = messageInput.value.trim();
+            const imageFile = imageInput.files[0];
+
+            if (!message && !imageFile) {
+                alert("Please enter a message or select an image to send.");
+                return;
+            }
+
+            try {
+                await sendMessage(chatRoomId, message, imageFile);
+                messageInput.value = "";
+                imageInput.value = ""; // Clear the file input
+            } catch (error) {
+                alert("Error sending message: " + error.message);
+            }
+        });
     </script>
 
 </body>
