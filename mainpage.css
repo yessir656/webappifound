@@ -240,7 +240,7 @@ body {
     padding: 15px; /* Reduced padding for shorter height */
     height: auto; /* Ensures dynamic height based on content */
     border-radius: 25px; /* Increased border radius for softer sides */
-    width: 80%; /* Slightly smaller width */
+    width: 50%; /* Slightly smaller width */
     max-width: 350px; /* Reduced max width */
     min-width: 250px; /* Reduced min width */
     transition: transform 0.3s ease, opacity 0.3s ease;
