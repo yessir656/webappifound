@@ -224,34 +224,126 @@ body {
     font-weight: bold;
 }
 
+/* Modernized floating form with gradient animation */
 .floating-form {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
-    width: 90%;
-    max-width: 400px;
+    background: #ffffff; /* Plain white background */
+    animation: none; /* Removed gradient animation */
+    padding: 15px; /* Reduced padding for shorter height */
+    height: auto; /* Ensures dynamic height based on content */
+    border-radius: 25px; /* Increased border radius for softer sides */
+    width: 80%; /* Slightly smaller width */
+    max-width: 350px; /* Reduced max width */
+    min-width: 250px; /* Reduced min width */
     transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.floating-form input[type="file"],
+.floating-form textarea,
+.floating-form select {
+    margin: 10px auto; /* Adjusted margin to fix overlapping */
+    display: block;
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.floating-form input[type="file"]:focus,
+.floating-form textarea:focus,
+.floating-form select:focus {
+    border-color: #ff7eb3;
+    box-shadow: 0 0 8px rgba(255, 126, 179, 0.5);
+    outline: none;
+}
+
+.floating-form .image-preview {
+    display: block;
+    margin: 15px auto; /* Adjusted margin to fix alignment */
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.floating-form .image-preview img {
+    max-width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.floating-form .image-preview img:hover {
+    transform: scale(1.05);
 }
 
 .floating-form button {
     width: 100%;
-    padding: 12px;
-    margin-top: 15px;
+    padding: 15px;
+    margin-top: 20px;
     border: none;
-    background-color: #007bff;
-    color: white;
+    background: #000; /* Changed button color to black */
+    color: white; /* Ensure text is visible */
     cursor: pointer;
-    border-radius: 25px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .floating-form button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
+    background: #333; /* Darker black on hover */
+    transform: scale(1.1);
+}
+
+.floating-form h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 26px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Backdrop fade-in animation */
+.floating-form-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.floating-form.active + .floating-form-backdrop {
+    display: block;
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .floating-form {
+        width: 90%;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-form {
+        width: 95%;
+        border-radius: 20px;
+    }
 }

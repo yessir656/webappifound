@@ -88,11 +88,15 @@
         <div class="icon" onclick="togglePostForm()">+</div>
         <div class="icon" onclick="window.location.href='Chat/main_chat.html'">Chat</div>
     </div>
+    <div class="floating-form-backdrop" id="formBackdrop"></div>
     <div class="floating-form" id="postForm">
         <h2>Post an Item</h2>
         <form id="postItemForm">
             <label for="image">Upload Image:</label>
             <input type="file" id="image" name="image" accept="image/*">
+            <div class="image-preview" id="imagePreview">
+                <img src="" alt="Image Preview" id="previewImage">
+            </div>
             <label for="description">Description:</label>
             <textarea id="description" name="description" rows="4"></textarea>
             <label for="category">Category:</label>
@@ -358,6 +362,9 @@
         });
     </script>
     <script>
+        const postForm = document.getElementById('postForm');
+        const formBackdrop = document.getElementById('formBackdrop');
+
         function showSection(section) {
             document.getElementById('lost-section').style.display = section === 'lost' ? 'block' : 'none';
             document.getElementById('found-section').style.display = section === 'found' ? 'block' : 'none';
@@ -365,10 +372,33 @@
             document.querySelector(`.icon[onclick="showSection('${section}')"]`).classList.add('active');
         }
         function togglePostForm() {
-            const form = document.getElementById('postForm');
-            form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+            const isVisible = postForm.style.display === 'block';
+            postForm.style.display = isVisible ? 'none' : 'block';
+            formBackdrop.style.display = isVisible ? 'none' : 'block';
         }
+
+        formBackdrop.addEventListener('click', () => {
+            postForm.style.display = 'none';
+            formBackdrop.style.display = 'none';
+        });
         
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
