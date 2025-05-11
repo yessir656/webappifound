@@ -32,7 +32,6 @@
         <input type="text" id="newStudentId" placeholder="Student ID">
         <button id="addStudentIdButton">Add Student ID</button>
         <br><br>
-        <a href="mainpage.html" class="button">Go to Main Page</a>
 
         <h3>Deleted Posts</h3>
         <table id="deletedPostsTable">
@@ -41,6 +40,7 @@
                     <th>Description</th>
                     <th>Category</th>
                     <th>Deleted At</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,11 +63,13 @@
                 <!-- Posts will be dynamically added here -->
             </tbody>
         </table>
+        <br><br>
+        <button onclick="window.location.href='mainpage.html'">Go to Main Page</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDJHgD-oUB2h5rVvB0ISDR_pyqMpt9Gdn0",
@@ -81,6 +83,9 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Set isAdmin flag in localStorage when admin accesses the page
+        localStorage.setItem("isAdmin", "true");
 
         document.getElementById("addStudentIdButton").addEventListener("click", async () => {
             const studentId = document.getElementById("newStudentId").value.trim();
@@ -177,23 +182,25 @@
 
         loadUsers();
 
-        // Function to load deleted posts from localStorage
-        function loadDeletedPosts() {
+        // Function to load deleted posts from Firestore
+        async function loadDeletedPosts() {
+            const querySnapshot = await getDocs(collection(db, "deletedPosts"));
             const deletedPostsTable = document.getElementById("deletedPostsTable").querySelector("tbody");
-            const deletedPost = JSON.parse(localStorage.getItem("deletedPost"));
+            deletedPostsTable.innerHTML = ""; // Clear existing rows
 
-            if (deletedPost) {
+            querySnapshot.forEach((doc) => {
+                const deletedPost = doc.data();
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${deletedPost.description}</td>
                     <td>${deletedPost.category}</td>
-                    <td>${new Date().toLocaleString()}</td>
+                    <td>${new Date(deletedPost.deletedAt).toLocaleString()}</td>
+                    <td>
+                        <button class="recoverPost" data-id="${doc.id}">Recover</button>
+                    </td>
                 `;
                 deletedPostsTable.appendChild(row);
-
-                // Clear the deleted post from localStorage after displaying
-                localStorage.removeItem("deletedPost");
-            }
+            });
         }
 
         // Periodically check for deleted posts
@@ -228,11 +235,56 @@
             if (event.target.classList.contains("deletePost")) {
                 const postId = event.target.getAttribute("data-id");
                 try {
-                    await deleteDoc(doc(db, "posts", postId)); // Delete the post from Firestore
-                    alert("Post deleted successfully");
-                    loadPosts(); // Refresh the posts table
+                    // Get the post data before deleting
+                    const postDoc = await getDoc(doc(db, "posts", postId));
+                    if (postDoc.exists()) {
+                        const postData = postDoc.data();
+
+                        // Add the post to the "deletedPosts" collection
+                        await setDoc(doc(db, "deletedPosts", postId), {
+                            ...postData,
+                            deletedAt: new Date().toISOString()
+                        });
+
+                        // Delete the post from the "posts" collection
+                        await deleteDoc(doc(db, "posts", postId));
+
+                        alert("Post deleted successfully");
+                        loadPosts(); // Refresh the posts table
+                        loadDeletedPosts(); // Refresh the deleted posts table
+                    } else {
+                        alert("Post not found.");
+                    }
                 } catch (error) {
                     alert("Error deleting post: " + error.message);
+                }
+            }
+        });
+
+        // Event listener for recovering posts
+        document.addEventListener("click", async (event) => {
+            if (event.target.classList.contains("recoverPost")) {
+                const postId = event.target.getAttribute("data-id");
+                try {
+                    // Get the deleted post from Firestore
+                    const deletedPostDoc = await getDoc(doc(db, "deletedPosts", postId));
+                    if (deletedPostDoc.exists()) {
+                        const deletedPostData = deletedPostDoc.data();
+
+                        // Add the post back to the "posts" collection
+                        await setDoc(doc(db, "posts", postId), deletedPostData);
+
+                        // Remove the post from the "deletedPosts" collection
+                        await deleteDoc(doc(db, "deletedPosts", postId));
+
+                        alert("Post recovered successfully");
+                        loadDeletedPosts(); // Refresh the deleted posts table
+                        loadPosts(); // Refresh the posts table
+                    } else {
+                        alert("Post not found in deleted posts.");
+                    }
+                } catch (error) {
+                    alert("Error recovering post: " + error.message);
                 }
             }
         });

@@ -131,7 +131,8 @@
 
         // Check if user is authenticated
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
+            const isAdmin = localStorage.getItem("isAdmin"); // Check admin status from localStorage
+            if (!user && !isAdmin) {
                 alert("You must be logged in to post an item.");
                 window.location.href = "index.html"; // Redirect to login page
             }
@@ -318,7 +319,8 @@
 
             try {
                 const user = auth.currentUser;
-                if (!user) {
+                const isAdmin = localStorage.getItem("isAdmin"); // Check admin status from localStorage
+                if (!user && !isAdmin) {
                     alert("You must be logged in to post an item.");
                     return;
                 }
@@ -346,7 +348,7 @@
 
                 // Save post to Firestore
                 await addDoc(collection(db, "posts"), {
-                    userId: user.uid,
+                    userId: user ? user.uid : "admin",
                     description: description,
                     category: category,
                     imageUrl: imageUrl,

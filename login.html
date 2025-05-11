@@ -90,6 +90,7 @@
             // Check for admin credentials
             if (email === "admin" && password === "admin") {
                 alert("Welcome, Admin!");
+                localStorage.setItem("isAdmin", "true"); // Set admin flag in localStorage
                 window.location.href = "adminpage.html"; // Redirect to admin page
                 return;
             }
