@@ -231,9 +231,10 @@ body {
     justify-content: center;
     align-items: center;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 65%; /* Further adjusted position to avoid overlapping */
+    left: auto; /* Reset left positioning */
+    right: 5%; /* Positioned the form on the right side */
+    transform: translate(0, -65%); /* Adjusted transform to align with the new right position */
     background: #ffffff; /* Plain white background */
     animation: none; /* Removed gradient animation */
     padding: 15px; /* Reduced padding for shorter height */
