@@ -209,14 +209,14 @@
                         ${auth.currentUser && auth.currentUser.uid === post.userId ? `
                             <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer;">&times;</button>
                         ` : ""}
-                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto;">` : ""}
-                        <p><strong>Username:</strong> ${userData.username}</p>
-                        <p><strong>Student ID:</strong> ${userData.studentId}</p>
-                        <p><strong>Description:</strong> ${post.description}</p>
-                        <p><strong>Category:</strong> ${post.category}</p>
-                        <p><strong>Posted At:</strong> ${new Date(post.timestamp).toLocaleString()}</p>
-                        <p><strong>Claims:</strong> <span class="claim-counter">${post.claimCount || 0}</span></p>
-                        <button class="claim-btn">Claim It</button>
+                        
+                        <p style="font-size: 16px; margin: 5px 0;"><strong>User:</strong> ${userData.username}(${userData.studentId})</p>
+                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong></strong> ${new Date(post.timestamp).toLocaleString()}</p>
+                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong>Category:</strong> ${post.category}</p>
+                        <p style="font-size: 16px; margin: 5px 0;"><strong>Description:</strong> ${post.description}</p>
+                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto; border-radius: 10px; margin-bottom: 15px;">` : ""}
+                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong>Claims:</strong> <span class="claim-counter">${post.claimCount || 0}</span></p>
+                        <button class="claim-btn" style="background: black; color: white; border: none; border-radius: 5px; padding: 10px 15px; font-size: 14px; cursor: pointer;">Claim It</button>
                     `;
 
                     const closeButton = postElement.querySelector(".close-btn");
@@ -382,6 +382,12 @@
             formBackdrop.style.display = 'none';
         });
         
+        // Ensure the floating form is hidden on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            postForm.style.display = 'none';
+            formBackdrop.style.display = 'none';
+        });
+
         const imageInput = document.getElementById('image');
         const imagePreview = document.getElementById('imagePreview');
         const previewImage = document.getElementById('previewImage');
