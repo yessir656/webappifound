@@ -8,18 +8,60 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <style>
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-section img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <div id="register">
-            <h2>Register</h2>
-            <input type="text" id="username" placeholder="Username">
-            <input type="text" id="studentId" placeholder="Student ID">
-            <input type="email" id="registerEmail" placeholder="Email">
-            <input type="password" id="registerPassword" placeholder="Password">
-            <button id="registerButton">Register</button>
-            <p class="toggle"><a href="login.html">Already have an account? Login</a></p>
-        </div>   
+        <div class="image-section">
+            <img src="4.png" alt="Welcome Image">
+        </div>
+        <div class="form-section">
+            <div id="register">
+                <h2>Register</h2>
+                <input type="text" id="username" placeholder="Username">
+                <input type="text" id="studentId" placeholder="Student ID">
+                <input type="email" id="registerEmail" placeholder="Email">
+                <div class="password-container">
+                    <input type="password" id="registerPassword" placeholder="Password">
+                    <span id="toggleRegisterPassword" class="toggle-password-icon">👁️</span>
+                </div>
+                <button id="registerButton">Register</button>
+                <p class="toggle"><a href="login.html">Already have an account? Login</a></p>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -50,6 +92,22 @@
 
             if (!username || !studentId || !email || !password) {
                 alert("All fields are required!");
+                return;
+            }
+
+            // Check if password contains at least one capital letter, one number, and is more than 8 characters
+            const capitalLetterRegex = /[A-Z]/;
+            const numberRegex = /[0-9]/;
+            if (!capitalLetterRegex.test(password)) {
+                alert("Password must contain at least one capital letter!");
+                return;
+            }
+            if (!numberRegex.test(password)) {
+                alert("Password must contain at least one number!");
+                return;
+            }
+            if (password.length <= 8) {
+                alert("Password must be more than 8 characters long!");
                 return;
             }
 
@@ -88,6 +146,19 @@
             }
         });
 
+        // Toggle password visibility for registration
+        document.getElementById("toggleRegisterPassword").addEventListener("click", () => {
+            const passwordField = document.getElementById("registerPassword");
+            const toggleIcon = document.getElementById("toggleRegisterPassword");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleIcon.textContent = "🙈"; // Change icon to indicate hiding
+            } else {
+                passwordField.type = "password";
+                toggleIcon.textContent = "👁️"; // Change icon to indicate showing
+            }
+        });
     </script>
 </body>
 </html>

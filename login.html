@@ -7,16 +7,58 @@
     <link rel="stylesheet" href="styles.css">
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <style>
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-section img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 49px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <div id="login">
-            <h2>Login</h2>
-            <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button id="loginBtn">Login</button>
-            <button id="forgotPasswordBtn">Forgot Password</button>
-            <p class="toggle"><a href="index.html">Don't have an account? Register</a></p>
+        <div class="image-section">
+            <img src="4.png" alt="Welcome Image">
+        </div>
+        <div class="form-section">
+            <div id="login">
+                <h2>Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <div class="password-container">
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <span id="togglePassword" class="toggle-password-icon">👁️</span>
+                </div>
+                <button id="loginBtn">Login</button>
+                <button id="forgotPasswordBtn">Forgot Password</button>
+                <p class="toggle"><a href="index.html">Don't have an account? Register</a></p>
+            </div>
         </div>
     </div>
 
@@ -76,6 +118,20 @@
                 alert("Password reset email sent! Please check your inbox.");
             } catch (error) {
                 alert("Error: " + error.message);
+            }
+        });
+
+        // Toggle password visibility
+        document.getElementById("togglePassword").addEventListener("click", () => {
+            const passwordField = document.getElementById("loginPassword");
+            const toggleIcon = document.getElementById("togglePassword");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleIcon.textContent = "🙈"; // Change icon to indicate hiding
+            } else {
+                passwordField.type = "password";
+                toggleIcon.textContent = "👁️"; // Change icon to indicate showing
             }
         });
     </script>
