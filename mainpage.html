@@ -29,6 +29,9 @@
             <div id="userDropdown" class="dropdown-content">
                 <p><strong>Username:</strong> <span id="dropdownUsername">Loading...</span></p>
                 <p><strong>Student ID:</strong> <span id="dropdownStudentId">Loading...</span></p>
+                <p><strong>Email:</strong> <span id="dropdownEmail">Loading...</span></p>
+                <input type="email" id="updateEmailInput" placeholder="New Email" style="display: none;">
+                <button id="updateEmailButton" style="display: none;">Update Email</button>
                 <button id="logoutButton">Logout</button>
             </div>
         </div>
@@ -47,30 +50,52 @@
             display: none;
             position: absolute;
             right: 0;
-            background-color: #f9f9f9;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            padding: 10px;
+            background-color: #ffffff;
+            min-width: 220px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
             z-index: 1;
-            border-radius: 5px;
+            border-radius: 8px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
         }
+
+        .user-menu:hover .dropdown-content {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .dropdown-content p {
-            margin: 5px 0;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
         }
+
         .dropdown-content button {
-            background-color: #ff4d4d;
+            background-color: black;
             color: white;
             border: none;
             padding: 10px;
             width: 100%;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
         }
+
         .dropdown-content button:hover {
-            background-color: #e60000;
+            background-color: #333;
         }
-        .user-menu:hover .dropdown-content {
-            display: block;
+
+        #updateEmailInput {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
         }
     </style>
     <div class="content">
@@ -112,7 +137,7 @@
         import { Chatroom } from './Chat/model/chatroom.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -128,6 +153,14 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Redirect to login page if user is not authenticated
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                alert("You must be logged in to access this page.");
+                window.location.href = "index.html"; // Redirect to login page
+            }
+        });
 
         // Check if user is authenticated
         onAuthStateChanged(auth, (user) => {
@@ -147,8 +180,42 @@
                         const userData = querySnapshot.docs[0].data();
                         document.getElementById("dropdownUsername").textContent = userData.username || "Unknown";
                         document.getElementById("dropdownStudentId").textContent = userData.studentId || "Unknown";
+                        document.getElementById("dropdownEmail").textContent = userData.email || "Unknown";
+
+                        // Show email update input and button
+                        document.getElementById("updateEmailInput").style.display = "block";
+                        document.getElementById("updateEmailButton").style.display = "block";
                     }
                 });
+            }
+        });
+
+        // Update email functionality
+        const updateEmailButton = document.getElementById("updateEmailButton");
+        updateEmailButton.addEventListener("click", async () => {
+            const newEmail = document.getElementById("updateEmailInput").value.trim();
+
+            if (!newEmail) {
+                alert("Please enter a new email address.");
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(userQuery);
+
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0];
+                    await updateDoc(doc(db, "users", userDoc.id), { email: newEmail });
+
+                    alert("Email updated successfully.");
+                    document.getElementById("dropdownEmail").textContent = newEmail;
+                } else {
+                    alert("User not found.");
+                }
+            } catch (error) {
+                alert("Error updating email: " + error.message);
             }
         });
 
@@ -176,6 +243,8 @@
 
                 // Clear existing content to prevent duplication
                 lostSection.innerHTML = "<h2>Lost Items</h2>";
+                foundSection.innerHTML = "<h2>Found Items</h2>";
+
                 foundSection.innerHTML = "<h2>Found Items</h2>";
 
                 let foundInLost = false;

@@ -54,6 +54,7 @@
                 <input type="text" id="username" placeholder="Username">
                 <input type="text" id="studentId" placeholder="Student ID">
                 <input type="email" id="registerEmail" placeholder="Email">
+                <input type="email" id="confirmEmail" placeholder="Confirm Email">
                 <div class="password-container">
                     <input type="password" id="registerPassword" placeholder="Password">
                     <span id="toggleRegisterPassword" class="toggle-password-icon">👁️</span>
@@ -88,10 +89,16 @@
             const username = document.getElementById("username").value;
             const studentId = document.getElementById("studentId").value;
             const email = document.getElementById("registerEmail").value;
+            const confirmEmail = document.getElementById("confirmEmail").value;
             const password = document.getElementById("registerPassword").value;
 
-            if (!username || !studentId || !email || !password) {
+            if (!username || !studentId || !email || !confirmEmail || !password) {
                 alert("All fields are required!");
+                return;
+            }
+
+            if (email !== confirmEmail) {
+                alert("Email and Confirm Email do not match!");
                 return;
             }
 
@@ -112,17 +119,16 @@
             }
 
             try {
-                // Check if studentId exists and is available (no email and password associated)
+                // Check if studentId exists and matches the provided email
                 const studentIdQuery = await getDocs(collection(db, "users"));
-                const studentIdDoc = studentIdQuery.docs.find(doc => doc.data().studentId === studentId);
-
+                const studentIdDoc = studentIdQuery.docs.find(doc => doc.data().studentId === studentId && doc.data().email === email);
                 if (!studentIdDoc) {
-                    alert("Student ID does not exist. Please contact the admin to generate it.");
+                    alert("Student ID and Email do not match. Please contact the admin.");
                     return;
                 }
 
                 const studentIdData = studentIdDoc.data();
-                if (studentIdData.email || studentIdData.password) {
+                if (studentIdData.username || studentIdData.password) {
                     alert("Student ID is already in use. Please contact the admin.");
                     return;
                 }
@@ -143,6 +149,36 @@
                 window.location.href = "login.html"; // Redirect to login page
             } catch (error) {
                 alert(error.message);
+            }
+        });
+
+        // Display the assigned email address on the registration page if the Student ID is valid
+        document.getElementById("studentId").addEventListener("blur", async () => {
+            const studentId = document.getElementById("studentId").value.trim();
+
+            if (!studentId) {
+                return;
+            }
+
+            try {
+                // Check if the Student ID exists in the database
+                const studentIdQuery = await getDocs(collection(db, "users"));
+                const studentIdDoc = studentIdQuery.docs.find(doc => doc.data().studentId === studentId);
+
+                if (studentIdDoc) {
+                    const studentData = studentIdDoc.data();
+                    if (studentData.email) {
+                        document.getElementById("registerEmail").value = studentData.email;
+                        document.getElementById("registerEmail").readOnly = true;
+                        alert("Your assigned email has been pre-filled.");
+                    } else {
+                        alert("No email is assigned to this Student ID. Please contact the admin.");
+                    }
+                } else {
+                    alert("Invalid Student ID. Please contact the admin.");
+                }
+            } catch (error) {
+                alert("Error fetching Student ID: " + error.message);
             }
         });
 

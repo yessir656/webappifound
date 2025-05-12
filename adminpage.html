@@ -16,8 +16,8 @@
             <thead>
                 <tr>
                     <th>Student ID</th>
+                     <th>Email</th>
                     <th>Username</th>
-                    <th>Email</th>
                     <th>Password</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -28,8 +28,9 @@
             </tbody>
         </table>
         
-        <h3>Add New Student ID</h3>
+        <h3>Add New Student ID and Email</h3>
         <input type="text" id="newStudentId" placeholder="Student ID">
+        <input type="email" id="newStudentEmail" placeholder="Student Email">
         <button id="addStudentIdButton">Add Student ID</button>
         <br><br>
 
@@ -89,27 +90,28 @@
 
         document.getElementById("addStudentIdButton").addEventListener("click", async () => {
             const studentId = document.getElementById("newStudentId").value.trim();
+            const studentEmail = document.getElementById("newStudentEmail").value.trim();
 
-            if (!studentId) {
-                alert("Please enter a Student ID.");
+            if (!studentId || !studentEmail) {
+                alert("Please enter both Student ID and Email.");
                 return;
             }
 
             try {
-                // Check if studentId already exists
                 const studentIdQuery = await getDocs(collection(db, "users"));
-                const studentIdExists = studentIdQuery.docs.some(doc => doc.data().studentId === studentId);
+                const studentExists = studentIdQuery.docs.some(doc => 
+                    doc.data().studentId === studentId && doc.data().email === studentEmail
+                );
 
-                if (studentIdExists) {
-                    alert("Student ID already exists. Please use a different one.");
+                if (studentExists) {
+                    alert("The combination of Student ID and Email already exists. Please use a different one.");
                     return;
                 }
 
-                // Add studentId to Firestore with no email or password (available for use)
                 const newDocRef = doc(collection(db, "users"));
-                await setDoc(newDocRef, { studentId, email: null, password: null, uid: newDocRef.id });
+                await setDoc(newDocRef, { studentId, email: studentEmail, password: null, uid: newDocRef.id });
 
-                alert("Student ID successfully added!");
+                alert("Student ID and Email successfully added!");
                 loadUsers();
             } catch (error) {
                 alert("Error adding Student ID: " + error.message);
@@ -122,12 +124,14 @@
             userTable.innerHTML = "";
             querySnapshot.forEach((doc) => {
                 const user = doc.data();
-                const status = user.email ? "Unavailable" : "Available";
+                // Correctly determine availability based on username and password
+                const isAvailable = !user.username && !user.password;
+                const status = isAvailable ? "Available" : "Unavailable";
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td><input type="text" value="${user.studentId}" data-id="${doc.id}" class="editStudentId"></td>
-                    <td><input type="text" value="${user.username || ''}" data-id="${doc.id}" class="editUsername"></td>
                     <td><input type="email" value="${user.email || ''}" data-id="${doc.id}" class="editEmail"></td>
+                    <td><input type="text" value="${user.username || ''}" data-id="${doc.id}" class="editUsername"></td>
                     <td><input type="text" value="${user.password || ''}" data-id="${doc.id}" class="editPassword"></td>
                     <td>${status}</td>
                     <td>
