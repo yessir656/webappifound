@@ -156,20 +156,16 @@
 
         // Redirect to login page if user is not authenticated
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                alert("You must be logged in to access this page.");
-                window.location.href = "index.html"; // Redirect to login page
-            }
-        });
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
 
-        // Check if user is authenticated
-        onAuthStateChanged(auth, (user) => {
-            const isAdmin = localStorage.getItem("isAdmin"); // Check admin status from localStorage
-            if (!user && !isAdmin) {
-                alert("You must be logged in to post an item.");
-                window.location.href = "index.html"; // Redirect to login page
-            }
-        });
+    if (!user && !isAdmin) {
+        alert("You must be logged in to access this page.");
+        window.location.href = "index.html";
+    }
+
+    // ✅ If user is logged in or isAdmin is true, continue loading the page
+});
+
 
         // Populate dropdown with user info
         onAuthStateChanged(auth, (user) => {
@@ -219,10 +215,10 @@
             }
         });
 
-        // Logout functionality
-        document.getElementById("logoutButton").addEventListener("click", async () => {
+                document.getElementById("logoutButton").addEventListener("click", async () => {
             try {
                 await auth.signOut();
+                localStorage.removeItem("isAdmin"); // Clear admin flag
                 alert("Logged out successfully.");
                 window.location.href = "index.html"; // Redirect to login page
             } catch (error) {
@@ -230,6 +226,14 @@
                 alert("Failed to log out.");
             }
         });
+                    // Prevent caching and force reload on back navigation
+            window.onpageshow = function(event) {
+                if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+                    // Reload page on back/forward navigation
+                    window.location.reload();
+                }
+            };
+
 
         async function fetchPosts(searchQuery = "") {
             try {
