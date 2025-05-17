@@ -142,27 +142,48 @@ async function sendMessage(chatRoomId, message, imageFile = null) {
             return;
         }
 
-        let imageUrl = null;
-        if (imageFile) {
-            imageUrl = await uploadImageToCloudinary(imageFile); // Upload image and get URL
+        // 1. Get chatroom to identify other user
+        const chatroomRef = doc(db, "Chatrooms", chatRoomId);
+        const chatroomSnap = await getDoc(chatroomRef);
+        
+        if (!chatroomSnap.exists()) {
+            throw new Error("Chatroom not found");
         }
 
+        // 2. Determine other user ID
+        const chatroomData = chatroomSnap.data();
+        const [uid1, uid2] = chatroomData.users;
+        const otherUserId = uid1 === currentUser.uid ? uid2 : uid1;
+        
+        if (!otherUserId) {
+            throw new Error("Other user not found in chatroom");
+        }
+
+        // 3. Handle image upload if present
+        let imageUrl = null;
+        if (imageFile) {
+            imageUrl = await uploadImageToCloudinary(imageFile);
+        }
+
+        // 4. Send message
         const messagesRef = collection(db, "Chatrooms", chatRoomId, "chat");
         await addDoc(messagesRef, {
             sender: currentUser.uid,
-            text: message || null, // Allow empty text if an image is sent
-            imageUrl: imageUrl, // Save the image URL
-            timestamp: new Date(),
+            text: message || null,
+            imageUrl: imageUrl,
+            timestamp: new Date()
         });
 
-        const chatroomRef = doc(db, "Chatrooms", chatRoomId);
+        // 5. Update chatroom
         await updateDoc(chatroomRef, {
             lastMessage: message || "Image sent",
             lastUpdated: new Date(),
-            lastSender: currentUser.uid,
+            lastSender: currentUser.uid
         });
 
-        await getChatMessages(chatRoomId, chatRoomId);
+        // 6. Refresh messages
+        await getChatMessages(otherUserId, chatRoomId);
+
     } catch (error) {
         console.error("Error sending message:", error);
         throw error;

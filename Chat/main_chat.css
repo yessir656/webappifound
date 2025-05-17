@@ -7,7 +7,7 @@ body {
     align-items: center; 
     min-height: 100vh;
     box-sizing: border-box;
-    background-color: #333333;
+    background-color: #ffffff;
     gap: 15px;
 }
 
@@ -15,7 +15,7 @@ body {
     position: relative;
     border-radius: 20px;
     box-shadow: 0 2px 10px rgba(27, 26, 26, 0.1);
-    background-color: #202020;
+    background-color: #ffffff;
     padding: 20px;
     height: 90vh;
     transition: all 0.3s ease;
@@ -99,14 +99,14 @@ body {
 
 .recent-title {
     font-size: 30px;
-    color: white;
+    color: rgb(48, 48, 48);
     margin: 0; 
 }
 
 .search-container {
     display: flex;
     align-items: center;
-    background: #2d2d2d;
+    background: #ffffff;
     border-radius: 20px;
     padding: 8px 15px;
     margin: 15px 0;
@@ -117,14 +117,14 @@ body {
     flex: 1;
     background: transparent;
     border: none;
-    color: white;
+    color: rgb(48, 48, 48);
     font-size: 16px;
     padding: 8px;
     outline: none;
 }
 
 .search-input::placeholder {
-    color: #aaa;
+    color: rgb(48, 48, 48);
 }
 
 .search-button {
@@ -135,7 +135,7 @@ body {
 }
 
 .search-icon {
-    color: #aaa;
+    color: rgb(48, 48, 48);
     font-size: 18px;
 }
 
@@ -146,7 +146,7 @@ body {
 .recent_list {
     margin-top: 20px;
     width: 100%;
-    background-color: #202020;
+    background-color: #ffffff;
     min-height: 50px; 
     padding: 10px; 
     box-sizing: border-box; 
@@ -162,12 +162,12 @@ body {
 .chat-name {
     font-weight: bold;
     font-size: 18px;
-    color: white;
+    color: rgb(48, 48, 48);
 }
 
 .chat-message {
     font-size: 16px;
-    color: #666;
+    color: rgb(48, 48, 48);
 }
 
 /* MAIN CHAT - Improved Structure */
@@ -177,7 +177,7 @@ body {
     align-items: center;  
     gap: 10px;
     padding: 10px;
-    color: white;
+    color: rgb(48, 48, 48);
     border-bottom: 1px solid #444;
     position: static; 
     margin-bottom: 10px;
@@ -221,7 +221,7 @@ body {
 
 .message-right {
     align-self: flex-end;
-    background-color: #007bff;
+    background-color: #32649a;
     color: white;
     margin-left: auto;
     flex-direction: row-reverse;
@@ -265,7 +265,7 @@ body {
     padding: 10px 0;
     border-top: 1px solid #444;
     box-sizing: border-box;
-    background-color: #202020;
+    background-color: #ffffff;
     position: static; 
     margin-top: auto; 
 }
@@ -277,12 +277,12 @@ body {
     border-radius: 20px;
     border: none;
     outline: none;
-    background-color: #3a3a3a;
-    color: white;
+    background-color: #ffffff;
+    color: rgb(48, 48, 48);
 }
 
 .message_input::placeholder {
-    color: #bbb;
+    color: rgb(48, 48, 48);
 }
 
 .image_icon {
