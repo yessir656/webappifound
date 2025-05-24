@@ -82,30 +82,18 @@
         import { listenToChatMessages, sendMessage } from './send_chat.js';
         import { getChatRoomId } from './recent_chat.js';
 
-        // Example: Start listening to messages when a chat room is opened
-        const chatRoomId = getChatRoomId(); // Replace with the actual chat room ID
-        const otherUserId = "OTHER_USER_ID"; // Replace with the actual other user's ID
-        listenToChatMessages(chatRoomId, otherUserId);
+        function loadChatFromLocalStorage() {
+        const chatRoomId = localStorage.getItem("chatRoomId");
+        const otherUserId = localStorage.getItem("chatOtherUserId");
+        if (chatRoomId && otherUserId) {
+            listenToChatMessages(otherUserId, chatRoomId);
+        } else {
+            console.error("Chat room info missing in localStorage.");
+        }
+    }
 
-        document.querySelector(".send_icon").addEventListener("click", async () => {
-            const messageInput = document.querySelector(".message_input");
-            const imageInput = document.getElementById("imageInput");
-            const message = messageInput.value.trim();
-            const imageFile = imageInput.files[0];
-
-            if (!message && !imageFile) {
-                alert("Please enter a message or select an image to send.");
-                return;
-            }
-
-            try {
-                await sendMessage(chatRoomId, message, imageFile);
-                messageInput.value = "";
-                imageInput.value = ""; // Clear the file input
-            } catch (error) {
-                alert("Error sending message: " + error.message);
-            }
-        });
+    // Call on page load
+    loadChatFromLocalStorage();
     </script>
 
 </body>

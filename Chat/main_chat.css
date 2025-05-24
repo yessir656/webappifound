@@ -11,7 +11,7 @@ body {
     gap: 15px;
 }
 
-.recent_chat, .profile, .main_chat {
+.recent_chat, .main_chat {
     position: relative;
     border-radius: 20px;
     box-shadow: 0 2px 10px rgba(27, 26, 26, 0.1);
@@ -329,3 +329,5 @@ body {
   .image_icon:hover {
     opacity: 0.8;
   }
+
+  

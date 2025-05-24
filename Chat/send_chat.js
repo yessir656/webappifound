@@ -1,16 +1,24 @@
-import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+    collection, query, where, getDocs, doc, getDoc, addDoc,
+    updateDoc, orderBy, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { auth, db } from "./firebase/connect.js";
 import { getChatRoomId } from "./recent_chat.js";
 
-export async function getChatMessages(otherId, chatRoomId) {
-    // Get chatmate data
+let unsubscribeMessages = null;
+
+export async function listenToChatMessages(otherId, chatRoomId) {
+    // Stop existing listener
+    if (unsubscribeMessages) {
+        unsubscribeMessages();
+    }
+
     const userQuery = query(
         collection(db, "users"),
         where("uid", "==", otherId)
     );
     const userQuerySnapshot = await getDocs(userQuery);
 
-    // Ensure the query result is not empty
     if (userQuerySnapshot.empty || !userQuerySnapshot.docs[0]) {
         console.error("No user data found for the given ID:", otherId);
         return;
@@ -18,48 +26,42 @@ export async function getChatMessages(otherId, chatRoomId) {
 
     const otherUserData = userQuerySnapshot.docs[0].data();
 
-    // Update name header
     const nameElements = document.getElementsByClassName('chatmate');
     if (nameElements.length > 0) {
         nameElements[0].textContent = otherUserData.username || "username";
     }
 
-    // Get the message content container
     const messagesContainer = document.querySelector('.message-content');
     if (!messagesContainer) {
         console.error("Message container not found");
         return;
     }
-    
-    // Clear previous messages but keep the container structure
-    messagesContainer.innerHTML = '';
 
-    // Get messages in ascending order (oldest first)
     const messagesQuery = query(
         collection(db, "Chatrooms", chatRoomId, "chat"),
         orderBy("timestamp", "desc")
     );
 
-    const messagesSnapshot = await getDocs(messagesQuery);
-    
-    if (messagesSnapshot.empty) {
-        messagesContainer.innerHTML = '<div class="no-messages">No messages yet</div>';
-        return;
-    }
+    unsubscribeMessages = onSnapshot(messagesQuery, (messagesSnapshot) => {
+        messagesContainer.innerHTML = '';
 
-    messagesSnapshot.forEach(doc => {
-        displayChatMessage(doc, messagesContainer, otherUserData);
+        if (messagesSnapshot.empty) {
+            messagesContainer.innerHTML = '<div class="no-messages">No messages yet</div>';
+            return;
+        }
+
+        messagesSnapshot.forEach(doc => {
+            displayChatMessage(doc, messagesContainer, otherUserData);
+        });
+
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 function displayChatMessage(doc, container, otherUserData) {
     try {
         const messageData = doc?.data();
-        if (!messageData) {
-            console.error("Message data is undefined");
-            return;
-        }
+        if (!messageData) return;
 
         const isCurrentUser = messageData.sender === auth.currentUser?.uid;
         const messageDiv = document.createElement('div');
@@ -113,59 +115,40 @@ function formatTime(date) {
 async function uploadImageToCloudinary(file) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", "ifound"); // Replace with your Cloudinary upload preset
-    formData.append("cloud_name", "dyvk0urit"); // Replace with your Cloudinary cloud name
+    formData.append("upload_preset", "ifound"); // Replace with your Cloudinary preset
+    formData.append("cloud_name", "dyvk0urit"); // Replace with your Cloudinary name
 
-    try {
-        const response = await fetch("https://api.cloudinary.com/v1_1/dyvk0urit/image/upload", {
-            method: "POST",
-            body: formData,
-        });
+    const response = await fetch("https://api.cloudinary.com/v1_1/dyvk0urit/image/upload", {
+        method: "POST",
+        body: formData,
+    });
 
-        if (!response.ok) {
-            throw new Error("Failed to upload image to Cloudinary");
-        }
-
-        const data = await response.json();
-        return data.secure_url; // Return the uploaded image URL
-    } catch (error) {
-        console.error("Error uploading image:", error);
-        throw error;
+    if (!response.ok) {
+        throw new Error("Failed to upload image to Cloudinary");
     }
+
+    const data = await response.json();
+    return data.secure_url;
 }
 
-async function sendMessage(chatRoomId, message, imageFile = null) {
+export async function sendMessage(chatRoomId, message, imageFile = null) {
     try {
         const currentUser = auth.currentUser;
-        if (!currentUser) {
-            console.error("No authenticated user");
-            return;
-        }
+        if (!currentUser) throw new Error("No authenticated user");
 
-        // 1. Get chatroom to identify other user
         const chatroomRef = doc(db, "Chatrooms", chatRoomId);
         const chatroomSnap = await getDoc(chatroomRef);
-        
-        if (!chatroomSnap.exists()) {
-            throw new Error("Chatroom not found");
-        }
+        if (!chatroomSnap.exists()) throw new Error("Chatroom not found");
 
-        // 2. Determine other user ID
         const chatroomData = chatroomSnap.data();
         const [uid1, uid2] = chatroomData.users;
         const otherUserId = uid1 === currentUser.uid ? uid2 : uid1;
-        
-        if (!otherUserId) {
-            throw new Error("Other user not found in chatroom");
-        }
 
-        // 3. Handle image upload if present
         let imageUrl = null;
         if (imageFile) {
             imageUrl = await uploadImageToCloudinary(imageFile);
         }
-
-        // 4. Send message
+ 
         const messagesRef = collection(db, "Chatrooms", chatRoomId, "chat");
         await addDoc(messagesRef, {
             sender: currentUser.uid,
@@ -174,15 +157,11 @@ async function sendMessage(chatRoomId, message, imageFile = null) {
             timestamp: new Date()
         });
 
-        // 5. Update chatroom
         await updateDoc(chatroomRef, {
             lastMessage: message || "Image sent",
             lastUpdated: new Date(),
             lastSender: currentUser.uid
         });
-
-        // 6. Refresh messages
-        await getChatMessages(otherUserId, chatRoomId);
 
     } catch (error) {
         console.error("Error sending message:", error);
@@ -190,65 +169,36 @@ async function sendMessage(chatRoomId, message, imageFile = null) {
     }
 }
 
+// Event listener for sending message
 document.addEventListener('DOMContentLoaded', () => {
     const sendIcon = document.querySelector(".send_icon");
+    const messageInput = document.querySelector(".message_input");
     const imageInput = document.getElementById("imageInput");
 
-    sendIcon.addEventListener("click", async () => {
-        const messageInput = document.querySelector(".message_input");
+    // Send text message on send icon click
+    sendIcon?.addEventListener("click", async () => {
         const message = messageInput.value.trim();
-        const imageFile = imageInput.files[0];
-
-        if (!message && !imageFile) {
-            alert("Please enter a message or select an image to send.");
+        if (!message) {
+            alert("Please enter a message.");
             return;
         }
-
         try {
-            await sendMessage(getChatRoomId(), message, imageFile);
+            await sendMessage(localStorage.getItem("chatRoomId"), message, null);
             messageInput.value = "";
-            imageInput.value = ""; // Clear the file input
         } catch (error) {
             alert("Error sending message: " + error.message);
         }
     });
-});
 
-document.addEventListener('DOMContentLoaded', () => {
-    const imgIcon = document.querySelector('.image_icon');
-    
-    if (imgIcon) {
-      // Create hidden file input
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.style.display = 'none';
-      fileInput.id = 'imageInput'; // Add ID for reference
-      document.body.appendChild(fileInput);
-  
-      // Create preview container (dynamically)
-      const previewDiv = document.createElement('div');
-      previewDiv.className = 'image-preview';
-      imgIcon.insertAdjacentElement('afterend', previewDiv);
-  
-      // Make image clickable
-      imgIcon.style.cursor = 'pointer';
-      imgIcon.addEventListener('click', () => fileInput.click());
-  
-      // Handle file selection and display
-      fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            previewDiv.innerHTML = ''; // Clear previous
-            const previewImg = document.createElement('img');
-            previewImg.src = event.target.result;
-            previewImg.style.maxHeight = '150px';
-            previewDiv.appendChild(previewImg);
-          };
-          reader.readAsDataURL(file);
+    // Send image automatically after selecting a file
+    imageInput?.addEventListener("change", async () => {
+        const imageFile = imageInput.files[0];
+        if (!imageFile) return;
+        try {
+            await sendMessage(localStorage.getItem("chatRoomId"), null, imageFile);
+            imageInput.value = ""; // Clear the file input
+        } catch (error) {
+            alert("Error sending image: " + error.message);
         }
-      });
-    }
+    });
 });

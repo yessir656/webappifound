@@ -139,7 +139,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
+        import { listenToChatMessages } from './Chat/send_chat.js';
         const firebaseConfig = {
             apiKey: "AIzaSyDJHgD-oUB2h5rVvB0ISDR_pyqMpt9Gdn0",
             authDomain: "webapplostandfound.firebaseapp.com",
@@ -276,6 +276,8 @@
                         continue;
                     }
 
+                    const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
+
                     const postElement = document.createElement("div");
                     postElement.className = "post";
                     postElement.style.position = "relative"; // Ensure positioning for the close button
@@ -309,22 +311,40 @@
 
                     const claimButton = postElement.querySelector(".claim-btn");
                     claimButton.addEventListener("click", async () => {
-                        try {
-                            // Increment the claim count in Firestore
-                            const postRef = doc(db, "posts", docSnapshot.id);
-                            await setDoc(postRef, { claimCount: (post.claimCount || 0) + 1 }, { merge: true });
+                    try {
+                        // Increment the claim count in Firestore
+                        const postRef = doc(db, "posts", docSnapshot.id);
+                        await setDoc(postRef, { claimCount: (post.claimCount || 0) + 1 }, { merge: true });
 
-                            // Update the claim counter in the UI
-                            const claimCounter = postElement.querySelector(".claim-counter");
-                            claimCounter.textContent = (post.claimCount || 0) + 1;
+                        // Update the claim counter in the UI
+                        const claimCounter = postElement.querySelector(".claim-counter");
+                        claimCounter.textContent = (post.claimCount || 0) + 1;
 
-                            // Redirect to the chat page with the post owner
-                            window.location.href = `Chat/main_chat.html?userId=${post.userId}`;
-                        } catch (error) {
-                            console.error("Error claiming post:", error);
-                            alert("Failed to claim the post.");
+                    // Check if chatroom already exists
+                        const chatroomRef = doc(db, "Chatrooms", roomId);
+                        const chatroomSnap = await getDoc(chatroomRef);
+
+                        // Store info for chat page (use localStorage or query params)
+                        localStorage.setItem("chatRoomId", roomId);
+                        localStorage.setItem("chatOtherUserId", post.userId);
+
+                        if (chatroomSnap.exists()) {
+                        // Chatroom exists - redirect to it
+                            window.location.href = `./Chat/main_chat.html`;
+                        } else {
+                            // Chatroom doesn't exist - create new one
+                            const newChatroom = new Chatroom(
+                            roomId,
+                            [post.userId, auth.currentUser.uid]
+                            );
+                        await setDoc(chatroomRef, newChatroom.toFirestore());
+                        window.location.href = `./Chat/main_chat.html`;
                         }
-                    });
+                    } catch (error) {
+                        console.error("Error claiming post:", error);
+                        alert("Failed to claim the post and create chat.");
+                    }
+                });
 
                     if (post.category === "lost") {
                         lostSection.appendChild(postElement);

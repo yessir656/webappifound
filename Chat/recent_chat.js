@@ -1,7 +1,7 @@
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { auth, db } from "./firebase/connect.js";
-import { getChatMessages } from "./send_chat.js";
+import { listenToChatMessages } from "./send_chat.js";
 
 let currentRoomId = null;
 let allChats = []; // Store all chats for filtering
@@ -75,7 +75,7 @@ function createDivForRecentChats(chat, chatListContainer) {
     chatDiv.className = "recent_list";
     chatDiv.style.cursor = "pointer";
     chatDiv.addEventListener("click", () => {
-        getChatMessages(chat.otherUserId, chat.chatroomId);
+        listenToChatMessages(chat.otherUserId, chat.chatroomId);
         currentRoomId = chat.chatroomId;
     });
 
