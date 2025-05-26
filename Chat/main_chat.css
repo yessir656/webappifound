@@ -329,3 +329,73 @@ body > .main_chat {
 .image_icon:hover {
   opacity: 0.8;
 }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .recent_chat {
+    width: 200px;
+    min-width: 120px;
+    padding: 10px;
+    margin-left: 1vw;
+  }
+  .main_chat {
+    padding: 10px;
+    margin-right: 1vw;
+  }
+  .recent-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 767px) {
+  body {
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+    min-height: 100vh;
+    height: 100vh;
+  }
+  .recent_chat {
+    display: none;
+  }
+  .main_chat {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    padding: 8px;
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  .user_profile {
+    border-radius: 0;
+    padding: 8px;
+    font-size: 16px;
+  }
+  .send_message {
+    border-radius: 0;
+    padding: 8px 0;
+  }
+  .message-content {
+    padding: 6px 0;
+    gap: 6px;
+  }
+  .recent-title {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main_chat {
+    padding: 4px;
+  }
+  .message_input {
+    font-size: 15px;
+    padding: 7px 10px;
+  }
+  .send_icon, .image_icon {
+    width: 30px;
+    height: 30px;
+    padding: 2px;
+  }
+}
