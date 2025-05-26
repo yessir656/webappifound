@@ -348,3 +348,105 @@ body {
         border-radius: 20px;
     }
 }
+
+.user-menu {
+    position: absolute;
+    display: inline-block;
+    right: 10px; /* Positions the entire menu container on the right */
+    top: 10px; /* Aligns with your navbar */
+}
+
+#userMenuButton {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    position: relative; /* Ensures proper positioning */
+    right: 0;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #ffffff;
+    min-width: 220px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    z-index: 1000;
+    border-radius: 8px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: translateY(-10px);
+    margin-top: 5px;
+}
+
+.user-menu:hover .dropdown-content,
+.user-menu.active .dropdown-content {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-content p {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.dropdown-content button {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-content button:hover {
+    background-color: #333;
+}
+
+#updateEmailInput {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .user-menu {
+        position: static; /* Reset positioning for mobile */
+        order: 2; /* Ensures it appears in the right order */
+        margin-left: auto; /* Pushes it to the right */
+    }
+    
+    .dropdown-content {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        width: 100%;
+        min-width: auto;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(100%);
+    }
+    
+    .user-menu.active .dropdown-content {
+        transform: translateY(0);
+    }
+    
+    #userMenuButton {
+        font-size: 24px;
+    }
+}

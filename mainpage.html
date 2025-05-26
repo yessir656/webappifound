@@ -24,7 +24,7 @@
                 <span class="magnifying-glass">&#128269;</span> <!-- Unicode for magnifying glass -->
             </button>
         </div>
-        <div class="user-menu" style="position: absolute; top: 10px; right: 10px;">
+        <div class="user-menu" >
             <button id="userMenuButton">☰</button> <!-- Unicode for menu icon -->
             <div id="userDropdown" class="dropdown-content">
                 <p><strong>Username:</strong> <span id="dropdownUsername">Loading...</span></p>
@@ -36,68 +36,7 @@
             </div>
         </div>
     </div>
-    <style>
-        .user-menu {
-            position: relative;
-        }
-        #userMenuButton {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background-color: #ffffff;
-            min-width: 220px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            z-index: 1;
-            border-radius: 8px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        .user-menu:hover .dropdown-content {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .dropdown-content p {
-            margin: 10px 0;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .dropdown-content button {
-            background-color: black;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
-        }
-
-        .dropdown-content button:hover {
-            background-color: #333;
-        }
-
-        #updateEmailInput {
-            width: calc(100% - 20px);
-            padding: 8px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-    </style>
+    
     <div class="content">
         <div id="lost-section" class="section active">
             <h2>Lost Items</h2>

@@ -11,12 +11,14 @@
 </head>
 <body>
     <div class="container">
-        <h2>Admin Dashboard</h2>
+    <h2>Admin Dashboard</h2>
+
+    <div class="table-wrapper">
         <table id="userTable">
             <thead>
                 <tr>
                     <th>Student ID</th>
-                     <th>Email</th>
+                    <th>Email</th>
                     <th>Username</th>
                     <th>Password</th>
                     <th>Status</th>
@@ -27,14 +29,16 @@
                 <!-- Users will be dynamically added here -->
             </tbody>
         </table>
-        
-        <h3>Add New Student ID and Email</h3>
-        <input type="text" id="newStudentId" placeholder="Student ID">
-        <input type="email" id="newStudentEmail" placeholder="Student Email">
-        <button id="addStudentIdButton">Add Student ID</button>
-        <br><br>
+    </div>
+    
+    <h3>Add New Student ID and Email</h3>
+    <input type="text" id="newStudentId" placeholder="Student ID">
+    <input type="email" id="newStudentEmail" placeholder="Student Email">
+    <button id="addStudentIdButton">Add Student ID</button>
+    <br><br>
 
-        <h3>Deleted Posts</h3>
+    <h3>Deleted Posts</h3>
+    <div class="table-wrapper">
         <table id="deletedPostsTable">
             <thead>
                 <tr>
@@ -48,8 +52,10 @@
                 <!-- Deleted posts will be dynamically added here -->
             </tbody>
         </table>
+    </div>
 
-        <h3>Posts</h3>
+    <h3>Posts</h3>
+    <div class="table-wrapper">
         <table id="postsTable">
             <thead>
                 <tr>
@@ -64,9 +70,12 @@
                 <!-- Posts will be dynamically added here -->
             </tbody>
         </table>
-        <br><br>
-        <button onclick="window.location.href='mainpage.html'">Go to Main Page</button>
     </div>
+    
+    <br><br>
+    <button onclick="window.location.href='mainpage.html'">Go to Main Page</button>
+</div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
