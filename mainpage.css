@@ -338,32 +338,39 @@ body {
 @media (max-width: 768px) {
     .floating-form {
         width: 90%;
-        padding: 20px;
+        padding: 0px;
     }
 }
 
 @media (max-width: 480px) {
     .floating-form {
-        width: 95%;
-        border-radius: 20px;
+        width: 90%;
+        border-radius:0px;
     }
 }
 
 .user-menu {
     position: absolute;
+    top: 12px;
+    right: 20px;
     display: inline-block;
-    right: 10px; /* Positions the entire menu container on the right */
-    top: 10px; /* Aligns with your navbar */
+    z-index: 1100;
 }
 
 #userMenuButton {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
     padding: 10px;
-    position: relative; /* Ensures proper positioning */
-    right: 0;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+#userMenuButton:hover,
+#userMenuButton:focus {
+    background-color: rgba(0, 0, 0, 0.05);
+    outline: none;
 }
 
 .dropdown-content {
@@ -371,24 +378,21 @@ body {
     position: absolute;
     right: 0;
     top: 100%;
+    margin-top: 8px;
     background-color: #ffffff;
-    min-width: 220px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    z-index: 1000;
-    border-radius: 8px;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    min-width: 240px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 10px;
     opacity: 0;
     transform: translateY(-10px);
-    margin-top: 5px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
 }
-
-/* .user-menu:hover .dropdown-content,
-.user-menu.active .dropdown-content {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-} */
 
 .user-menu.active .dropdown-content {
     display: block;
@@ -398,20 +402,30 @@ body {
 
 .dropdown-content p {
     margin: 10px 0;
-    font-size: 14px;
-    color: #333;
+    font-size: 15px;
+    color: #444;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
 }
 
 .dropdown-content button {
-    background-color: black;
+    display: block;
+    background-color: #111;
     color: white;
     border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 5px;
+    padding: 12px 24px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px;
     transition: background-color 0.3s ease;
+    margin: 10px 0;
+    width: 60%;
+    min-width: 0;
+    box-sizing: border-box;
+    text-align: left;
 }
 
 .dropdown-content button:hover {
@@ -419,40 +433,48 @@ body {
 }
 
 #updateEmailInput {
-    width: calc(100% - 20px);
-    padding: 8px;
-    margin: 10px 0;
+    width: 80%;
+    padding: 10px;
+    margin-top: 10px;
+    width: auto;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 6px;
     font-size: 14px;
+    box-sizing: border-box;
+    text-align: left;
+    margin-bottom: 10px;
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
     .user-menu {
-        position: static; /* Reset positioning for mobile */
-        order: 2; /* Ensures it appears in the right order */
-        margin-left: auto; /* Pushes it to the right */
+        position: static;
+        order: 2;
+        margin-left: auto;
     }
-    
+
     .dropdown-content {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        top: auto;
-        width: 100%;
-        min-width: auto;
-        border-radius: 8px 8px 0 0;
-        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
-        transform: translateY(100%);
+        position: absolute;
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        top: 100%;
+        width: 90vw;
+        min-width: 220px;
+        max-width: 320px;
+        transform: translateX(-50%) translateY(8px);
+        border-radius: 16px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
     }
-    
+
     .user-menu.active .dropdown-content {
-        transform: translateY(0);
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
     }
-    
+
     #userMenuButton {
-        font-size: 24px;
+        font-size: 26px;
     }
 }
