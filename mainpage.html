@@ -273,7 +273,9 @@
               continue;
             }
 
-            const roomId = post.userId + "+" + auth.currentUser.uid;
+            // const roomId = post.userId + "+" + auth.currentUser.uid;
+            const users = [post.userId, auth.currentUser.uid].sort();
+            const roomId = users[0] + "+" + users[1];
 
             const postElement = document.createElement("div");
             postElement.className = "post";
