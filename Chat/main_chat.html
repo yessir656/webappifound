@@ -1,99 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="main_chat.css">
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
-    <title>IFound Chat</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="main_chat.css">
+<script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+<title>IFound Chat</title>
 </head>
 <body>
-    <!-- Recent Chat Display-->
-    <div class="recent_chat">
-        <div class="recent-chat-title">
-            <img src="img/4.png" alt="Description of image" class="logo" onclick="redirectToUserChat()">
-            <h1 class="recent-title">Chats</h1>
-        </div>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search chats..." class="search-input">
-            <button id="searchButton" class="search-button">
-                <i class="search-icon">🔍</i>
-            </button>
-        </div>
-        <div class="chat-list-container"></div>
-        
-    </div>
+    <!-- Toggle button for mobile (hamburger menu) -->
+    <button class="toggle-recent-btn" aria-label="Show recent chats">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect y="6" width="28" height="3.5" rx="1.75" fill="white"/>
+        <rect y="12.25" width="28" height="3.5" rx="1.75" fill="white"/>
+        <rect y="18.5" width="28" height="3.5" rx="1.75" fill="white"/>
+      </svg>
+    </button>
 
-    <!-- Main Chat Display -->
-    <div class="main_chat">
-        <div class="user_profile">
-            <img src="img/user_icon.png" class="user_icon">
-            <h1 class="chatmate"></h1>
-        </div>
-        <div class="message-content"></div>
-        <div class="send_message">
-            <input type="file" id="imageInput" accept="image/*" style="display: none;">
-            <img src="img/image.png" class="image_icon" alt="Send" onclick="document.getElementById('imageInput').click();">
-            <input type="text" class="message_input" placeholder="Type a message...">
-            <img src="img/send__icon.png" class="send_icon" alt="Send">
-        </div>
-    </div>
+<!-- Recent Chat Display-->
+<div class="recent_chat">
+<div class="recent-chat-title">
+<img src="img/4.png" alt="Description of image" class="logo" onclick="redirectToUserChat()">
+<h1 class="recent-title">Chats</h1>
+</div>
+<div class="search-container">
+<input type="text" id="searchInput" placeholder="Search chats..." class="search-input">
+<button id="searchButton" class="search-button">
+<i class="search-icon">🔍</i>
+</button>
+</div>
+<div class="chat-list-container"></div>
 
-    <!-- Additional Info Display -->
-    <div class="profile">
-        <!-- This will be the clickable icon that opens file selection -->
-        
-    </div>
+</div>
+
+<!-- Main Chat Display -->
+<div class="main_chat">
+<div class="user_profile">
+<img src="img/user_icon.png" class="user_icon">
+<h1 class="chatmate"></h1>
+</div>
+<div class="message-content"></div>
+<div class="send_message">
+<input type="file" id="imageInput" accept="image/*" style="display: none;">
+<img src="img/image.png" class="image_icon" alt="Send" onclick="document.getElementById('imageInput').click();">
+<input type="text" class="message_input" placeholder="Type a message...">
+<img src="img/send__icon.png" class="send_icon" alt="Send">
+</div>
+</div>
+
+<!-- Additional Info Display -->
+<div class="profile">
+<!-- This will be the clickable icon that opens file selection -->
+
+</div>
 
 
-    <script type="module" src="recent_chat.js"></script>
-    <script type="module" src="send_chat.js"></script>
-    <script type="module">
-        import { filterChats } from './recent_chat.js';
+<script type="module" src="recent_chat.js"></script>
+<script type="module" src="send_chat.js"></script>
+<script type="module">
+import { filterChats } from './recent_chat.js';
 
-        document.getElementById('searchButton').addEventListener('click', () => {
-            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-            filterChats(searchQuery);
-        });
+document.getElementById('searchButton').addEventListener('click', () => {
+const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+filterChats(searchQuery);
+});
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchQuery = e.target.value.trim().toLowerCase();
-            filterChats(searchQuery);
-        });
+document.getElementById('searchInput').addEventListener('input', (e) => {
+const searchQuery = e.target.value.trim().toLowerCase();
+filterChats(searchQuery);
+});
 
-        function redirectToUserChat() {
-            const currentUser = auth.currentUser;
-            if (currentUser) {
-                const userChatRoomId = currentRoomId; // Use the current chat room ID
-                if (userChatRoomId) {
-                    getChatMessages(currentUser.uid, userChatRoomId);
-                } else {
-                    alert("No active chat room found.");
-                }
-            } else {
-                alert("You must be logged in to access your chat.");
-            }
-        }
-    </script>
-    <script type="module">
-        import { listenToChatMessages, sendMessage } from './send_chat.js';
-        import { getChatRoomId } from './recent_chat.js';
+function redirectToUserChat() {
+const currentUser = auth.currentUser;
+if (currentUser) {
+const userChatRoomId = currentRoomId; // Use the current chat room ID
+if (userChatRoomId) {
+getChatMessages(currentUser.uid, userChatRoomId);
+} else {
+alert("No active chat room found.");
+}
+} else {
+alert("You must be logged in to access your chat.");
+}
+}
+</script>
+<script type="module">
+import { listenToChatMessages, sendMessage } from './send_chat.js';
+import { getChatRoomId } from './recent_chat.js';
 
-        function loadChatFromLocalStorage() {
-        const chatRoomId = localStorage.getItem("chatRoomId");
-        const otherUserId = localStorage.getItem("chatOtherUserId");
-        if (chatRoomId && otherUserId) {
-            listenToChatMessages(otherUserId, chatRoomId);
-        } else {
-            console.error("Chat room info missing in localStorage.");
-        }
+function loadChatFromLocalStorage() {
+const chatRoomId = localStorage.getItem("chatRoomId");
+const otherUserId = localStorage.getItem("chatOtherUserId");
+if (chatRoomId && otherUserId) {
+listenToChatMessages(otherUserId, chatRoomId);
+} else {
+console.error("Chat room info missing in localStorage.");
+}
+}
+
+// Call on page load
+loadChatFromLocalStorage();
+</script>
+    <script>
+    // Mobile recent chat toggle logic
+    const toggleBtn = document.querySelector('.toggle-recent-btn');
+    const recentChat = document.querySelector('.recent_chat');
+    const mainChat = document.querySelector('.main_chat');
+
+    function updateToggleVisibility() {
+      if (window.innerWidth <= 767) {
+        toggleBtn.style.display = 'block';
+      } else {
+        toggleBtn.style.display = 'none';
+        recentChat.classList.remove('open');
+        mainChat.classList.remove('blur');
+      }
     }
+    updateToggleVisibility();
+    window.addEventListener('resize', updateToggleVisibility);
 
-    // Call on page load
-    loadChatFromLocalStorage();
+    toggleBtn.addEventListener('click', () => {
+      recentChat.classList.toggle('open');
+      mainChat.classList.toggle('blur');
+    });
+    // Optional: close sidebar when clicking outside on mobile
+    mainChat.addEventListener('click', () => {
+      if (window.innerWidth <= 767 && recentChat.classList.contains('open')) {
+        recentChat.classList.remove('open');
+        mainChat.classList.remove('blur');
+      }
+    });
     </script>
 
 </body>
