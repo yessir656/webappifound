@@ -1,5 +1,5 @@
 body {
-  position: relative;
+  position: fixed;
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
@@ -271,7 +271,7 @@ body > .main_chat {
   box-sizing: border-box;
   background-color: #ffffff;
   position: static;
-  margin-top: auto;
+  margin-top: 10px;
 }
 
 .message_input {
