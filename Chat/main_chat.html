@@ -11,15 +11,6 @@
     <title>IFound Chat</title>
 </head>
 <body>
-    <!-- Toggle button for mobile (hamburger menu) -->
-    <button class="toggle-recent-btn" aria-label="Show recent chats">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect y="6" width="28" height="3.5" rx="1.75" fill="white"/>
-        <rect y="12.25" width="28" height="3.5" rx="1.75" fill="white"/>
-        <rect y="18.5" width="28" height="3.5" rx="1.75" fill="white"/>
-      </svg>
-    </button>
-
     <!-- Recent Chat Display-->
     <div class="recent_chat">
         <div class="recent-chat-title">
@@ -103,36 +94,6 @@
 
     // Call on page load
     loadChatFromLocalStorage();
-    </script>
-    <script>
-    // Mobile recent chat toggle logic
-    const toggleBtn = document.querySelector('.toggle-recent-btn');
-    const recentChat = document.querySelector('.recent_chat');
-    const mainChat = document.querySelector('.main_chat');
-
-    function updateToggleVisibility() {
-      if (window.innerWidth <= 767) {
-        toggleBtn.style.display = 'block';
-      } else {
-        toggleBtn.style.display = 'none';
-        recentChat.classList.remove('open');
-        mainChat.classList.remove('blur');
-      }
-    }
-    updateToggleVisibility();
-    window.addEventListener('resize', updateToggleVisibility);
-
-    toggleBtn.addEventListener('click', () => {
-      recentChat.classList.toggle('open');
-      mainChat.classList.toggle('blur');
-    });
-    // Optional: close sidebar when clicking outside on mobile
-    mainChat.addEventListener('click', () => {
-      if (window.innerWidth <= 767 && recentChat.classList.contains('open')) {
-        recentChat.classList.remove('open');
-        mainChat.classList.remove('blur');
-      }
-    });
     </script>
 
 </body>

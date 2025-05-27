@@ -182,7 +182,7 @@ body > .main_chat {
   padding: 10px;
   color: rgb(48, 48, 48);
   border-bottom: 1px solid #444;
-  position: relative; /* Make children absolute relative to this */
+  position: static;
   margin-bottom: 10px;
 }
 
@@ -328,89 +328,6 @@ body > .main_chat {
 
 .image_icon:hover {
   opacity: 0.8;
-}
-
-/* Toggle button for recent chat (improved design, right side) */
-.toggle-recent-btn {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #32649a 60%, #4fa3ff 100%);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(50,100,154,0.18), 0 2px 8px rgba(0,0,0,0.10);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-  outline: none;
-  cursor: pointer;
-  padding: 0;
-  z-index: 2;
-}
-.toggle-recent-btn svg {
-  width: 24px;
-  height: 24px;
-}
-.toggle-recent-btn:active,
-.toggle-recent-btn:hover {
-  background: linear-gradient(135deg, #274a74 60%, #32649a 100%);
-  box-shadow: 0 8px 28px rgba(50,100,154,0.25);
-  transform: translateY(-50%) scale(1.08);
-}
-.toggle-recent-btn:focus {
-  box-shadow: 0 0 0 3px #4fa3ff;
-}
-
-@media (max-width: 767px) {
-  .toggle-recent-btn {
-    display: flex;
-  }
-  .recent_chat {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 80vw;
-    max-width: 340px;
-    height: 100vh;
-    z-index: 1200;
-    background: #fff;
-    box-shadow: 2px 0 16px rgba(0,0,0,0.18);
-    transition: transform 0.3s ease;
-    transform: translateX(-100%);
-  }
-  .recent_chat.open {
-    display: block;
-    transform: translateX(0);
-  }
-  .recent_chat .close-btn {
-    display: block;
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: none;
-    border: none;
-    font-size: 28px;
-    color: #32649a;
-    cursor: pointer;
-    z-index: 1300;
-  }
-}
-
-@media (min-width: 768px) {
-  .toggle-recent-btn {
-    display: none !important;
-  }
-  .recent_chat {
-    display: block !important;
-    position: relative;
-    transform: none !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
 }
 
 /* Responsive Design */
