@@ -77,6 +77,8 @@ function createDivForRecentChats(chat, chatListContainer) {
     chatDiv.addEventListener("click", () => {
         listenToChatMessages(chat.otherUserId, chat.chatroomId);
         currentRoomId = chat.chatroomId;
+        localStorage.setItem("chatRoomId", chat.chatroomId);
+        localStorage.setItem("chatOtherUserId", chat.otherUserId);
     });
 
     const img = document.createElement("img");

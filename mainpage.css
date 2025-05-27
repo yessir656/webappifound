@@ -383,7 +383,13 @@ body {
     margin-top: 5px;
 }
 
-.user-menu:hover .dropdown-content,
+/* .user-menu:hover .dropdown-content,
+.user-menu.active .dropdown-content {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+} */
+
 .user-menu.active .dropdown-content {
     display: block;
     opacity: 1;

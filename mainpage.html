@@ -1,444 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IFound Navbar</title>
-    <link rel="stylesheet" href="mainpage.css">
+    <link rel="stylesheet" href="mainpage.css" />
     <script src="Chat/firebase/recent_chat.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
-</head>
-<body>
+    <script
+      type="module"
+      src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
+    ></script>
+    <script
+      type="module"
+      src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
+    ></script>
+    <script
+      type="module"
+      src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+    ></script>
+    <script
+      type="module"
+      src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"
+    ></script>
+  </head>
+  <body>
     <div class="navbar">
-        <div class="logo">
-            <a href="mainpage.html">
-                <img src="4.png" alt="Logo">
-            </a>
+      <div class="logo">
+        <a href="mainpage.html">
+          <img src="4.png" alt="Logo" />
+        </a>
+      </div>
+      <div class="search">
+        <input type="text" id="searchInput" placeholder="Search" />
+        <button id="searchButton">
+          <span class="magnifying-glass">&#128269;</span>
+        </button>
+      </div>
+      <div class="user-menu">
+        <button id="userMenuButton">☰</button>
+        <div id="userDropdown" class="dropdown-content">
+          <p>
+            <strong>Username:</strong>
+            <span id="dropdownUsername">Loading...</span>
+          </p>
+          <p>
+            <strong>Student ID:</strong>
+            <span id="dropdownStudentId">Loading...</span>
+          </p>
+          <p>
+            <strong>Email:</strong> <span id="dropdownEmail">Loading...</span>
+          </p>
+          <input
+            type="email"
+            id="updateEmailInput"
+            placeholder="New Email"
+            style="display: none"
+          />
+          <button id="updateEmailButton" style="display: none">
+            Update Email
+          </button>
+          <button id="logoutButton">Logout</button>
         </div>
-        <div class="search">
-            <input type="text" id="searchInput" placeholder="Search">
-            <button id="searchButton">
-                <span class="magnifying-glass">&#128269;</span> <!-- Unicode for magnifying glass -->
-            </button>
-        </div>
-        <div class="user-menu" >
-            <button id="userMenuButton">☰</button> <!-- Unicode for menu icon -->
-            <div id="userDropdown" class="dropdown-content">
-                <p><strong>Username:</strong> <span id="dropdownUsername">Loading...</span></p>
-                <p><strong>Student ID:</strong> <span id="dropdownStudentId">Loading...</span></p>
-                <p><strong>Email:</strong> <span id="dropdownEmail">Loading...</span></p>
-                <input type="email" id="updateEmailInput" placeholder="New Email" style="display: none;">
-                <button id="updateEmailButton" style="display: none;">Update Email</button>
-                <button id="logoutButton">Logout</button>
-            </div>
-        </div>
+      </div>
     </div>
-    
+
     <div class="content">
-        <div id="lost-section" class="section active">
-            <h2>Lost Items</h2>
-        </div>
-        <div id="found-section" class="section">
-            <h2>Found Items</h2>
-        </div>
-        
+      <div id="lost-section" class="section active">
+        <h2>Lost Items</h2>
+      </div>
+      <div id="found-section" class="section">
+        <h2>Found Items</h2>
+      </div>
     </div>
     <div class="footer">
-        <div class="icon active" onclick="showSection('lost')">Lost</div>
-        <div class="icon" onclick="showSection('found')">Found</div>
-        <div class="icon" onclick="togglePostForm()">+</div>
-        <div class="icon" onclick="window.location.href='Chat/main_chat.html'">Chat</div>
+      <div class="icon active" onclick="showSection('lost')">Lost</div>
+      <div class="icon" onclick="showSection('found')">Found</div>
+      <div class="icon" onclick="togglePostForm()">+</div>
+      <div class="icon" onclick="window.location.href='Chat/main_chat.html'">
+        Chat
+      </div>
     </div>
     <div class="floating-form-backdrop" id="formBackdrop"></div>
     <div class="floating-form" id="postForm">
-        <h2>Post an Item</h2>
-        <form id="postItemForm">
-            <label for="image">Upload Image:</label>
-            <input type="file" id="image" name="image" accept="image/*">
-            <div class="image-preview" id="imagePreview">
-                <img src="" alt="Image Preview" id="previewImage">
-            </div>
-            <label for="description">Description:</label>
-            <textarea id="description" name="description" rows="4"></textarea>
-            <label for="category">Category:</label>
-            <select id="category" name="category">
-                <option value="lost">Lost</option>
-                <option value="found">Found</option>
-            </select>
-            <button type="submit">Post</button>
-        </form>
+      <h2>Post an Item</h2>
+      <form id="postItemForm">
+        <label for="image">Upload Image:</label>
+        <input type="file" id="image" name="image" accept="image/*" />
+        <div class="image-preview" id="imagePreview">
+          <img src="" alt="Image Preview" id="previewImage" />
+        </div>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="4"></textarea>
+        <label for="category">Category:</label>
+        <select id="category" name="category">
+          <option value="lost">Lost</option>
+          <option value="found">Found</option>
+        </select>
+        <button type="submit">Post</button>
+      </form>
     </div>
     <script type="module">
-        // Firebase configuration
-        import { Chatroom } from './Chat/model/chatroom.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-        import { listenToChatMessages } from './Chat/send_chat.js';
-        const firebaseConfig = {
-            apiKey: "AIzaSyDJHgD-oUB2h5rVvB0ISDR_pyqMpt9Gdn0",
-            authDomain: "webapplostandfound.firebaseapp.com",
-            projectId: "webapplostandfound",
-            storageBucket: "webapplostandfound.appspot.com",
-            messagingSenderId: "23544433053",
-            appId: "1:23544433053:web:ad48cddc2b2f39407c4774",
-            measurementId: "G-2LGQZ7VY6P"
-        };
+      // Firebase configuration
+      import { Chatroom } from "./Chat/model/chatroom.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        query,
+        where,
+        getDocs,
+        doc,
+        getDoc,
+        setDoc,
+        deleteDoc,
+        onSnapshot,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      import { getStorage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+      import { listenToChatMessages } from "./Chat/send_chat.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyDJHgD-oUB2h5rVvB0ISDR_pyqMpt9Gdn0",
+        authDomain: "webapplostandfound.firebaseapp.com",
+        projectId: "webapplostandfound",
+        storageBucket: "webapplostandfound.appspot.com",
+        messagingSenderId: "23544433053",
+        appId: "1:23544433053:web:ad48cddc2b2f39407c4774",
+        measurementId: "G-2LGQZ7VY6P",
+      };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-        // Redirect to login page if user is not authenticated
-        onAuthStateChanged(auth, (user) => {
-    const isAdmin = localStorage.getItem("isAdmin") === "true";
+      // Redirect to login page if user is not authenticated
+      onAuthStateChanged(auth, (user) => {
+        const isAdmin = localStorage.getItem("isAdmin") === "true";
+        if (!user && !isAdmin) {
+          alert("You must be logged in to access this page.");
+          window.location.href = "index.html";
+        }
+      });
 
-    if (!user && !isAdmin) {
-        alert("You must be logged in to access this page.");
-        window.location.href = "index.html";
-    }
-
-    // ✅ If user is logged in or isAdmin is true, continue loading the page
-});
-
-
-        // Populate dropdown with user info
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
-                getDocs(userQuery).then((querySnapshot) => {
-                    if (!querySnapshot.empty) {
-                        const userData = querySnapshot.docs[0].data();
-                        document.getElementById("dropdownUsername").textContent = userData.username || "Unknown";
-                        document.getElementById("dropdownStudentId").textContent = userData.studentId || "Unknown";
-                        document.getElementById("dropdownEmail").textContent = userData.email || "Unknown";
-
-                        // Show email update input and button
-                        document.getElementById("updateEmailInput").style.display = "block";
-                        document.getElementById("updateEmailButton").style.display = "block";
-                    }
-                });
+      // Populate dropdown with user info
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", user.uid)
+          );
+          getDocs(userQuery).then((querySnapshot) => {
+            if (!querySnapshot.empty) {
+              const userData = querySnapshot.docs[0].data();
+              document.getElementById("dropdownUsername").textContent =
+                userData.username || "Unknown";
+              document.getElementById("dropdownStudentId").textContent =
+                userData.studentId || "Unknown";
+              document.getElementById("dropdownEmail").textContent =
+                userData.email || "Unknown";
+              document.getElementById("updateEmailInput").style.display =
+                "block";
+              document.getElementById("updateEmailButton").style.display =
+                "block";
             }
+          });
+        }
+      });
+
+      // Update email functionality
+      const updateEmailButton = document.getElementById("updateEmailButton");
+      updateEmailButton.addEventListener("click", async () => {
+        const newEmail = document
+          .getElementById("updateEmailInput")
+          .value.trim();
+        if (!newEmail) {
+          alert("Please enter a new email address.");
+          return;
+        }
+        try {
+          const user = auth.currentUser;
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", user.uid)
+          );
+          const querySnapshot = await getDocs(userQuery);
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            await updateDoc(doc(db, "users", userDoc.id), { email: newEmail });
+            alert("Email updated successfully.");
+            document.getElementById("dropdownEmail").textContent = newEmail;
+          } else {
+            alert("User not found.");
+          }
+        } catch (error) {
+          alert("Error updating email: " + error.message);
+        }
+      });
+
+      document
+        .getElementById("logoutButton")
+        .addEventListener("click", async () => {
+          try {
+            await auth.signOut();
+            localStorage.removeItem("isAdmin");
+            alert("Logged out successfully.");
+            window.location.href = "index.html";
+          } catch (error) {
+            console.error("Error logging out:", error);
+            alert("Failed to log out.");
+          }
         });
 
-        // Update email functionality
-        const updateEmailButton = document.getElementById("updateEmailButton");
-        updateEmailButton.addEventListener("click", async () => {
-            const newEmail = document.getElementById("updateEmailInput").value.trim();
+      // Prevent caching and force reload on back navigation
+      window.onpageshow = function (event) {
+        if (
+          event.persisted ||
+          performance.getEntriesByType("navigation")[0].type === "back_forward"
+        ) {
+          window.location.reload();
+        }
+      };
 
-            if (!newEmail) {
-                alert("Please enter a new email address.");
-                return;
+      async function fetchPosts(searchQuery = "") {
+        try {
+          console.log("Fetching posts with search query:", searchQuery);
+
+          const postsQuery = query(collection(db, "posts"));
+          const querySnapshot = await getDocs(postsQuery);
+
+          const lostSection = document.getElementById("lost-section");
+          const foundSection = document.getElementById("found-section");
+
+          // Clear existing content to prevent duplication
+          lostSection.innerHTML = "<h2>Lost Items</h2>";
+          foundSection.innerHTML = "<h2>Found Items</h2>";
+
+          let foundInLost = false;
+          let foundInFound = false;
+
+          for (const docSnapshot of querySnapshot.docs) {
+            const post = docSnapshot.data();
+            const userQuery = query(
+              collection(db, "users"),
+              where("uid", "==", post.userId)
+            );
+            const userQuerySnapshot = await getDocs(userQuery);
+
+            let userData = { username: "Unknown", studentId: "Unknown" };
+            if (!userQuerySnapshot.empty) {
+              userData = userQuerySnapshot.docs[0].data();
             }
 
-            try {
-                const user = auth.currentUser;
-                const userQuery = query(collection(db, "users"), where("uid", "==", user.uid));
-                const querySnapshot = await getDocs(userQuery);
-
-                if (!querySnapshot.empty) {
-                    const userDoc = querySnapshot.docs[0];
-                    await updateDoc(doc(db, "users", userDoc.id), { email: newEmail });
-
-                    alert("Email updated successfully.");
-                    document.getElementById("dropdownEmail").textContent = newEmail;
-                } else {
-                    alert("User not found.");
-                }
-            } catch (error) {
-                alert("Error updating email: " + error.message);
+            // Filter posts based on the search query
+            if (
+              searchQuery &&
+              !(
+                userData.username
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                userData.studentId
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                post.description
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase())
+              )
+            ) {
+              continue;
             }
-        });
 
-                document.getElementById("logoutButton").addEventListener("click", async () => {
-            try {
-                await auth.signOut();
-                localStorage.removeItem("isAdmin"); // Clear admin flag
-                alert("Logged out successfully.");
-                window.location.href = "index.html"; // Redirect to login page
-            } catch (error) {
-                console.error("Error logging out:", error);
-                alert("Failed to log out.");
-            }
-        });
-                    // Prevent caching and force reload on back navigation
-            window.onpageshow = function(event) {
-                if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
-                    // Reload page on back/forward navigation
-                    window.location.reload();
-                }
-            };
+            const roomId = post.userId + "+" + auth.currentUser.uid;
 
-
-        async function fetchPosts(searchQuery = "") {
-            try {
-                console.log("Fetching posts with search query:", searchQuery);
-
-                const postsQuery = query(collection(db, "posts"));
-                const querySnapshot = await getDocs(postsQuery);
-
-                const lostSection = document.getElementById("lost-section");
-                const foundSection = document.getElementById("found-section");
-
-                // Clear existing content to prevent duplication
-                lostSection.innerHTML = "<h2>Lost Items</h2>";
-                foundSection.innerHTML = "<h2>Found Items</h2>";
-
-                foundSection.innerHTML = "<h2>Found Items</h2>";
-
-                let foundInLost = false;
-                let foundInFound = false;
-
-                for (const docSnapshot of querySnapshot.docs) {
-                    const post = docSnapshot.data();
-                    const userQuery = query(collection(db, "users"), where("uid", "==", post.userId));
-                    const userQuerySnapshot = await getDocs(userQuery);
-
-                    let userData = { username: "Unknown", studentId: "Unknown" };
-                    if (!userQuerySnapshot.empty) {
-                        userData = userQuerySnapshot.docs[0].data();
-                    }
-
-                    // Filter posts based on the search query
-                    if (
-                        searchQuery &&
-                        !(
-                            userData.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            userData.studentId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            post.description.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                    ) {
-                        continue;
-                    }
-
-                    const roomId = post.userId + "+" + auth.currentUser.uid; // chat room ID
-
-                    const postElement = document.createElement("div");
-                    postElement.className = "post";
-                    postElement.style.position = "relative"; // Ensure positioning for the close button
-                    postElement.innerHTML = `
-                        ${auth.currentUser && auth.currentUser.uid === post.userId ? `
+            const postElement = document.createElement("div");
+            postElement.className = "post";
+            postElement.style.position = "relative";
+            postElement.innerHTML = `
+                        ${
+                          auth.currentUser &&
+                          auth.currentUser.uid === post.userId
+                            ? `
                             <button class="close-btn" style="position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer;">&times;</button>
-                        ` : ""}
-                        
-                        <p style="font-size: 16px; margin: 5px 0;"><strong>User:</strong> ${userData.username}(${userData.studentId})</p>
-                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong></strong> ${new Date(post.timestamp).toLocaleString()}</p>
-                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong>Category:</strong> ${post.category}</p>
-                        <p style="font-size: 16px; margin: 5px 0;"><strong>Description:</strong> ${post.description}</p>
-                        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto; border-radius: 10px; margin-bottom: 15px;">` : ""}
-                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong>Claims:</strong> <span class="claim-counter">${post.claimCount || 0}</span></p>
+                        `
+                            : ""
+                        }
+                        <p style="font-size: 16px; margin: 5px 0;"><strong>User:</strong> ${
+                          userData.username
+                        }(${userData.studentId})</p>
+                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong></strong> ${new Date(
+                          post.timestamp
+                        ).toLocaleString()}</p>
+                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong>Category:</strong> ${
+                          post.category
+                        }</p>
+                        <p style="font-size: 16px; margin: 5px 0;"><strong>Description:</strong> ${
+                          post.description
+                        }</p>
+                        ${
+                          post.imageUrl
+                            ? `<img src="${post.imageUrl}" alt="Post Image" style="max-width: 100%; height: auto; border-radius: 10px; margin-bottom: 15px;">`
+                            : ""
+                        }
+                        <p style="font-size: 14px; color: #555; margin: 5px 0;"><strong>Claims:</strong> <span class="claim-counter">${
+                          post.claimCount || 0
+                        }</span></p>
                         <button class="claim-btn" style="background: black; color: white; border: none; border-radius: 5px; padding: 10px 15px; font-size: 14px; cursor: pointer;">Claim It</button>
                     `;
 
-                    const closeButton = postElement.querySelector(".close-btn");
-                    if (closeButton) {
-                        closeButton.addEventListener("click", async () => {
-                            try {
-                                await deleteDoc(doc(db, "posts", docSnapshot.id)); // Delete the post from Firestore
-                                postElement.remove(); // Remove the post element from the DOM
-                                alert("Post deleted successfully.");
-                            } catch (error) {
-                                console.error("Error deleting post:", error);
-                                alert("Failed to delete the post.");
-                            }
-                        });
-                    }
-
-                    const claimButton = postElement.querySelector(".claim-btn");
-                    claimButton.addEventListener("click", async () => {
-                    try {
-                        // Increment the claim count in Firestore
-                        const postRef = doc(db, "posts", docSnapshot.id);
-                        await setDoc(postRef, { claimCount: (post.claimCount || 0) + 1 }, { merge: true });
-
-                        // Update the claim counter in the UI
-                        const claimCounter = postElement.querySelector(".claim-counter");
-                        claimCounter.textContent = (post.claimCount || 0) + 1;
-
-                    // Check if chatroom already exists
-                        const chatroomRef = doc(db, "Chatrooms", roomId);
-                        const chatroomSnap = await getDoc(chatroomRef);
-
-                        // Store info for chat page (use localStorage or query params)
-                        localStorage.setItem("chatRoomId", roomId);
-                        localStorage.setItem("chatOtherUserId", post.userId);
-
-                        if (chatroomSnap.exists()) {
-                        // Chatroom exists - redirect to it
-                            window.location.href = `./Chat/main_chat.html`;
-                        } else {
-                            // Chatroom doesn't exist - create new one
-                            const newChatroom = new Chatroom(
-                            roomId,
-                            [post.userId, auth.currentUser.uid]
-                            );
-                        await setDoc(chatroomRef, newChatroom.toFirestore());
-                        window.location.href = `./Chat/main_chat.html`;
-                        }
-                    } catch (error) {
-                        console.error("Error claiming post:", error);
-                        alert("Failed to claim the post and create chat.");
-                    }
-                });
-
-                    if (post.category === "lost") {
-                        lostSection.appendChild(postElement);
-                        foundInLost = true;
-                    } else if (post.category === "found") {
-                        foundSection.appendChild(postElement);
-                        foundInFound = true;
-                    }
+            const closeButton = postElement.querySelector(".close-btn");
+            if (closeButton) {
+              closeButton.addEventListener("click", async () => {
+                try {
+                  await deleteDoc(doc(db, "posts", docSnapshot.id));
+                  postElement.remove();
+                  alert("Post deleted successfully.");
+                } catch (error) {
+                  console.error("Error deleting post:", error);
+                  alert("Failed to delete the post.");
                 }
-
-                // Automatically switch to the correct section
-                if (searchQuery) {
-                    if (foundInLost && !foundInFound) {
-                        showSection('lost');
-                    } else if (foundInFound && !foundInLost) {
-                        showSection('found');
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching posts:", error);
+              });
             }
-        }
 
-        // Ensure fetchPosts is called on page load
-        window.addEventListener("load", () => {
-            fetchPosts();
-        });
+            const claimButton = postElement.querySelector(".claim-btn");
+            claimButton.addEventListener("click", async () => {
+              try {
+                const postRef = doc(db, "posts", docSnapshot.id);
+                await setDoc(
+                  postRef,
+                  { claimCount: (post.claimCount || 0) + 1 },
+                  { merge: true }
+                );
+                const claimCounter =
+                  postElement.querySelector(".claim-counter");
+                claimCounter.textContent = (post.claimCount || 0) + 1;
 
-        // Listen for deleted posts and update the admin page
-        onSnapshot(collection(db, "posts"), (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "removed") {
-                    const deletedPost = change.doc.data();
-                    console.log("Post deleted:", deletedPost); // Debugging log
-                    // Notify admin page about the deleted post
-                    localStorage.setItem("deletedPost", JSON.stringify(deletedPost));
+                const chatroomRef = doc(db, "Chatrooms", roomId);
+                const chatroomSnap = await getDoc(chatroomRef);
+
+                localStorage.setItem("chatRoomId", roomId);
+                localStorage.setItem("chatOtherUserId", post.userId);
+
+                if (chatroomSnap.exists()) {
+                  window.location.href = `./Chat/main_chat.html`;
+                } else {
+                  const newChatroom = new Chatroom(roomId, [
+                    post.userId,
+                    auth.currentUser.uid,
+                  ]);
+                  await setDoc(chatroomRef, newChatroom.toFirestore());
+                  window.location.href = `./Chat/main_chat.html`;
                 }
+              } catch (error) {
+                console.error("Error claiming post:", error);
+                alert("Failed to claim the post and create chat.");
+              }
             });
+
+            if (post.category === "lost") {
+              lostSection.appendChild(postElement);
+              foundInLost = true;
+            } else if (post.category === "found") {
+              foundSection.appendChild(postElement);
+              foundInFound = true;
+            }
+          }
+
+          // Automatically switch to the correct section
+          if (searchQuery) {
+            if (foundInLost && !foundInFound) {
+              showSection("lost");
+            } else if (foundInFound && !foundInLost) {
+              showSection("found");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        }
+      }
+
+      // Ensure fetchPosts is called on page load
+      window.addEventListener("load", () => {
+        fetchPosts();
+      });
+
+      // Listen for deleted posts and update the admin page
+      onSnapshot(collection(db, "posts"), (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "removed") {
+            const deletedPost = change.doc.data();
+            console.log("Post deleted:", deletedPost);
+            localStorage.setItem("deletedPost", JSON.stringify(deletedPost));
+          }
         });
+      });
 
-        // Add event listener to the search button
-        document.getElementById("searchButton").addEventListener("click", () => {
-            const searchQuery = document.getElementById("searchInput").value.trim();
-            fetchPosts(searchQuery);
-        });
+      // Add event listener to the search button
+      document.getElementById("searchButton").addEventListener("click", () => {
+        const searchQuery = document.getElementById("searchInput").value.trim();
+        fetchPosts(searchQuery);
+      });
 
-        // Add event listener to the search input for real-time filtering
-        document.getElementById("searchInput").addEventListener("input", (e) => {
-            const searchQuery = e.target.value.trim();
-            fetchPosts(searchQuery);
-        });
+      // Add event listener to the search input for real-time filtering
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        const searchQuery = e.target.value.trim();
+        fetchPosts(searchQuery);
+      });
 
-        // Handle form submission
-        document.getElementById("postItemForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
+      // Handle form submission
+      document
+        .getElementById("postItemForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-            const image = document.getElementById("image").files[0];
-            const description = document.getElementById("description").value;
-            const category = document.getElementById("category").value;
+          const image = document.getElementById("image").files[0];
+          const description = document.getElementById("description").value;
+          const category = document.getElementById("category").value;
 
-            if (!description || !category) {
-                alert("Description and category are required!");
-                return;
+          if (!description || !category) {
+            alert("Description and category are required!");
+            return;
+          }
+
+          try {
+            const user = auth.currentUser;
+            const isAdmin = localStorage.getItem("isAdmin");
+            if (!user && !isAdmin) {
+              alert("You must be logged in to post an item.");
+              return;
             }
 
-            try {
-                const user = auth.currentUser;
-                const isAdmin = localStorage.getItem("isAdmin"); // Check admin status from localStorage
-                if (!user && !isAdmin) {
-                    alert("You must be logged in to post an item.");
-                    return;
+            let imageUrl = null;
+            if (image) {
+              const formData = new FormData();
+              formData.append("file", image);
+              formData.append("upload_preset", "ifound");
+              formData.append("cloud_name", "dyvk0urit");
+
+              const response = await fetch(
+                "https://api.cloudinary.com/v1_1/dyvk0urit/image/upload",
+                {
+                  method: "POST",
+                  body: formData,
                 }
+              );
 
-                let imageUrl = null;
-                if (image) {
-                    // Upload image to Cloudinary
-                    const formData = new FormData();
-                    formData.append("file", image);
-                    formData.append("upload_preset", "ifound"); // Replace with your Cloudinary upload preset
-                    formData.append("cloud_name", "dyvk0urit"); // Replace with your Cloudinary cloud name
+              if (!response.ok) {
+                throw new Error("Failed to upload image to Cloudinary");
+              }
 
-                    const response = await fetch("https://api.cloudinary.com/v1_1/dyvk0urit/image/upload", {
-                        method: "POST",
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        throw new Error("Failed to upload image to Cloudinary");
-                    }
-
-                    const data = await response.json();
-                    imageUrl = data.secure_url; // Get the uploaded image URL
-                }
-
-                // Save post to Firestore
-                await addDoc(collection(db, "posts"), {
-                    userId: user ? user.uid : "admin",
-                    description: description,
-                    category: category,
-                    imageUrl: imageUrl,
-                    timestamp: new Date().toISOString()
-                });
-
-                alert("Post submitted successfully!");
-                document.getElementById("postItemForm").reset();
-                await fetchPosts(); // Fetch and display updated posts
-            } catch (error) {
-                alert("Error posting item: " + error.message);
+              const data = await response.json();
+              imageUrl = data.secure_url;
             }
+
+            await addDoc(collection(db, "posts"), {
+              userId: user ? user.uid : "admin",
+              description: description,
+              category: category,
+              imageUrl: imageUrl,
+              timestamp: new Date().toISOString(),
+            });
+
+            alert("Post submitted successfully!");
+            document.getElementById("postItemForm").reset();
+            await fetchPosts();
+          } catch (error) {
+            alert("Error posting item: " + error.message);
+          }
         });
     </script>
     <script>
-        const postForm = document.getElementById('postForm');
-        const formBackdrop = document.getElementById('formBackdrop');
+      // User menu toggle on click
+      document.addEventListener("DOMContentLoaded", function () {
+        const userMenuButton = document.getElementById("userMenuButton");
+        const userMenu = document.querySelector(".user-menu");
+        userMenuButton.addEventListener("click", function (e) {
+          e.stopPropagation();
+          userMenu.classList.toggle("active");
+        });
+        document.addEventListener("click", function (e) {
+          if (!userMenu.contains(e.target)) {
+            userMenu.classList.remove("active");
+          }
+        });
+      });
 
-        function showSection(section) {
-            document.getElementById('lost-section').style.display = section === 'lost' ? 'block' : 'none';
-            document.getElementById('found-section').style.display = section === 'found' ? 'block' : 'none';
-            document.querySelectorAll('.icon').forEach(icon => icon.classList.remove('active'));
-            document.querySelector(`.icon[onclick="showSection('${section}')"]`).classList.add('active');
+      const postForm = document.getElementById("postForm");
+      const formBackdrop = document.getElementById("formBackdrop");
+
+      function showSection(section) {
+        document.getElementById("lost-section").style.display =
+          section === "lost" ? "block" : "none";
+        document.getElementById("found-section").style.display =
+          section === "found" ? "block" : "none";
+        document
+          .querySelectorAll(".icon")
+          .forEach((icon) => icon.classList.remove("active"));
+        document
+          .querySelector(`.icon[onclick="showSection('${section}')"]`)
+          .classList.add("active");
+      }
+      function togglePostForm() {
+        const isVisible = postForm.style.display === "block";
+        postForm.style.display = isVisible ? "none" : "block";
+        formBackdrop.style.display = isVisible ? "none" : "block";
+      }
+
+      formBackdrop.addEventListener("click", () => {
+        postForm.style.display = "none";
+        formBackdrop.style.display = "none";
+      });
+
+      // Ensure the floating form is hidden on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        postForm.style.display = "none";
+        formBackdrop.style.display = "none";
+      });
+
+      const imageInput = document.getElementById("image");
+      const imagePreview = document.getElementById("imagePreview");
+      const previewImage = document.getElementById("previewImage");
+
+      imageInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            imagePreview.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        } else {
+          imagePreview.style.display = "none";
         }
-        function togglePostForm() {
-            const isVisible = postForm.style.display === 'block';
-            postForm.style.display = isVisible ? 'none' : 'block';
-            formBackdrop.style.display = isVisible ? 'none' : 'block';
-        }
-
-        formBackdrop.addEventListener('click', () => {
-            postForm.style.display = 'none';
-            formBackdrop.style.display = 'none';
-        });
-        
-        // Ensure the floating form is hidden on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            postForm.style.display = 'none';
-            formBackdrop.style.display = 'none';
-        });
-
-        const imageInput = document.getElementById('image');
-        const imagePreview = document.getElementById('imagePreview');
-        const previewImage = document.getElementById('previewImage');
-
-        imageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewImage.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreview.style.display = 'none';
-            }
-        });
+      });
     </script>
-</body>
+  </body>
 </html>
