@@ -228,24 +228,26 @@ body {
 .floating-form {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start; /* Avoid center to reduce vertical space usage */
     align-items: center;
     position: fixed;
-    top: 65%; /* Further adjusted position to avoid overlapping */
-    left: auto; /* Reset left positioning */
-    right: 5%; /* Positioned the form on the right side */
-    transform: translate(0, -65%); /* Adjusted transform to align with the new right position */
-    background: #ffffff; /* Plain white background */
-    animation: none; /* Removed gradient animation */
-    padding: 15px; /* Reduced padding for shorter height */
-    height: auto; /* Ensures dynamic height based on content */
-    border-radius: 25px; /* Increased border radius for softer sides */
-    width: 50%; /* Slightly smaller width */
-    max-width: 350px; /* Reduced max width */
-    min-width: 250px; /* Reduced min width */
+    top: 65%;
+    right: 5%;
+    transform: translate(0, -65%);
+    background: #ffffff;
+    animation: none;
+    padding: 10px; /* Slight padding for internal spacing */
+    height: auto;
+    max-height: 100vh; /* Prevent the form from growing too tall */
+    overflow-y: auto; /* Enable scrolling if content overflows */
+    border-radius: 20px;
+    width: 50%;
+    max-width: 350px;
+    min-width: 250px;
     transition: transform 0.3s ease, opacity 0.3s ease;
     z-index: 1000;
 }
+
 
 .floating-form input[type="file"],
 .floating-form textarea,
@@ -279,7 +281,7 @@ body {
 }
 
 .floating-form .image-preview img {
-    max-width: 100%;
+    max-width: 50%;
     border-radius: 10px;
     transition: transform 0.3s ease;
 }
