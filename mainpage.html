@@ -170,36 +170,81 @@
           });
         }
       });
+      import { EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-      // Update email functionality
-      const updateEmailButton = document.getElementById("updateEmailButton");
-      updateEmailButton.addEventListener("click", async () => {
-        const newEmail = document
-          .getElementById("updateEmailInput")
-          .value.trim();
-        if (!newEmail) {
-          alert("Please enter a new email address.");
-          return;
+async function reauthenticateUser(user, password) {
+  const credential = EmailAuthProvider.credential(user.email, password);
+  await reauthenticateWithCredential(user, credential);
+}
+
+import { updateEmail, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const updateEmailButton = document.getElementById("updateEmailButton");
+updateEmailButton.addEventListener("click", async () => {
+  const newEmail = document.getElementById("updateEmailInput").value.trim();
+  if (!newEmail) {
+    alert("Please enter a new email address.");
+    return;
+  }
+  const user = auth.currentUser;
+  try {
+    await updateEmail(user, newEmail);
+    alert("Firebase Auth email updated. Sending verification email...");
+
+    await sendEmailVerification(user);
+    alert("A verification email has been sent to your new address. Please verify your new email.");
+
+    // Update Firestore
+    const userQuery = query(
+      collection(db, "users"),
+      where("uid", "==", user.uid)
+    );
+    const querySnapshot = await getDocs(userQuery);
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      await updateDoc(doc(db, "users", userDoc.id), { email: newEmail });
+      document.getElementById("dropdownEmail").textContent = newEmail;
+      alert("Firestore email updated.");
+    } else {
+      alert("User not found in Firestore.");
+    }
+  } catch (error) {
+    if (error.code === "auth/requires-recent-login") {
+      const password = prompt("For security, please enter your password to continue:");
+      if (!password) {
+        alert("Password is required to re-authenticate.");
+        return;
+      }
+      try {
+        await reauthenticateUser(user, password);
+        await updateEmail(user, newEmail);
+        alert("Firebase Auth email updated after re-authentication. Sending verification email...");
+
+        await sendEmailVerification(auth.currentUser);
+        alert("A verification email has been sent to your new address. Please verify your new email.");
+
+        // Update Firestore
+        const userQuery = query(
+          collection(db, "users"),
+          where("uid", "==", user.uid)
+        );
+        const querySnapshot = await getDocs(userQuery);
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          await updateDoc(doc(db, "users", userDoc.id), { email: newEmail });
+          document.getElementById("dropdownEmail").textContent = newEmail;
+          alert("Firestore email updated.");
+        } else {
+          alert("User not found in Firestore.");
         }
-        try {
-          const user = auth.currentUser;
-          const userQuery = query(
-            collection(db, "users"),
-            where("uid", "==", user.uid)
-          );
-          const querySnapshot = await getDocs(userQuery);
-          if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0];
-            await updateDoc(doc(db, "users", userDoc.id), { email: newEmail });
-            alert("Email updated successfully.");
-            document.getElementById("dropdownEmail").textContent = newEmail;
-          } else {
-            alert("User not found.");
-          }
-        } catch (error) {
-          alert("Error updating email: " + error.message);
-        }
-      });
+      } catch (reauthError) {
+        alert("Re-authentication failed: " + reauthError.message);
+      }
+    } else {
+      alert("Error updating email: " + error.message);
+    }
+  }
+});
 
       document
         .getElementById("logoutButton")
